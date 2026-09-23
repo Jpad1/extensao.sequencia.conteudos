@@ -1,0 +1,2072 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roteiro EF</title>
+<meta name="description" content="Planificação letiva de Educação Física por turma — calendário, mapa de rotação de espaços e sequência de conteúdos editáveis, sem depender de IA.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F6F4EE; --surface:#FFFFFF; --surface-2:#EFEBE1; --text:#1C201E; --muted:#5D6660;
+    --primary:#1F5D50; --primary-ink:#0E332B; --accent:#D9612B; --accent-ink:#7A3312;
+    --border:#E1DCCC; --warn-bg:#FCEFD9; --warn-ink:#7A5311; --danger:#C0402C;
+    --danger-bg:#FBE7E4; --danger-ink:#8C2C1F; --today-bg:#FFF4EC;
+    --shadow: 0 1px 2px rgba(28,32,30,.06), 0 6px 20px -8px rgba(28,32,30,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181A; --surface:#1C2123; --surface-2:#242A2C; --text:#EDEFEC; --muted:#9BA6A0;
+      --primary:#5CB49B; --primary-ink:#CFEEE3; --accent:#F0895A; --accent-ink:#FFDCC6;
+      --border:#31383A; --warn-bg:#332B14; --warn-ink:#F0D18C; --danger:#E2795F;
+      --danger-bg:#3A2420; --danger-ink:#F3B7A8; --today-bg:#2A2320;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -8px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181A; --surface:#1C2123; --surface-2:#242A2C; --text:#EDEFEC; --muted:#9BA6A0;
+    --primary:#5CB49B; --primary-ink:#CFEEE3; --accent:#F0895A; --accent-ink:#FFDCC6;
+    --border:#31383A; --warn-bg:#332B14; --warn-ink:#F0D18C; --danger:#E2795F;
+    --danger-bg:#3A2420; --danger-ink:#F3B7A8; --today-bg:#2A2320;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -8px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text); font-family:"Archivo",system-ui,sans-serif;
+    padding:16px; padding-block-start: calc(16px + env(safe-area-inset-top,0px));
+    padding-block-end: calc(24px + env(safe-area-inset-bottom,0px));
+  }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .wrap{ max-width: 960px; margin: 0 auto; }
+
+  header.top{ margin-bottom: 14px; }
+  .eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 0 4px; }
+  h1{ font-family:"Archivo",sans-serif; font-weight:800; font-size: clamp(24px,5vw,32px); margin:0 0 14px; letter-spacing:-0.01em; text-wrap:balance; }
+
+  .toptabs{ display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:11px; margin-bottom:16px; }
+  .toptabs button{
+    flex:1; border:none; background:transparent; color:var(--muted); font:inherit; font-weight:700; font-size:13.5px;
+    padding:10px 12px; border-radius:8px; cursor:pointer;
+  }
+  .toptabs button.active{ background:var(--surface); color:var(--text); box-shadow: var(--shadow); }
+
+  .controls{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:12px; box-shadow: var(--shadow);
+  }
+  select, input[type=date], input[type=text], input[type=number], textarea{
+    appearance:none; -webkit-appearance:none; background:var(--surface-2); color:var(--text);
+    border:1px solid var(--border); border-radius:9px; padding:9px 12px; font:inherit; font-size:14px;
+  }
+  select{
+    padding-right:34px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%;
+    background-size: 5px 5px, 5px 5px; background-repeat:no-repeat; cursor:pointer; font-weight:600;
+  }
+  textarea{ width:100%; resize:vertical; font-family:inherit; line-height:1.5; }
+  select:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{ outline: 2px solid var(--accent); outline-offset:2px; }
+
+  .tabs{ display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:10px; }
+  .tabs button{ border:none; background:transparent; color:var(--muted); font:inherit; font-weight:600; font-size:13px; padding:7px 12px; border-radius:7px; cursor:pointer; }
+  .tabs button.active{ background:var(--surface); color:var(--text); box-shadow: var(--shadow); }
+
+  .spacer{ flex:1 1 auto; }
+
+  .btn-ghost{
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    font:inherit; font-weight:600; font-size:13px; padding:8px 12px; border-radius:9px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-ghost:hover{ border-color:var(--primary); }
+  .btn-primary{
+    border:1px solid var(--primary); background:var(--primary); color:#fff;
+    font:inherit; font-weight:700; font-size:13px; padding:9px 14px; border-radius:9px; cursor:pointer;
+  }
+  .btn-primary:hover{ opacity:.92; }
+  .btn-danger{
+    border:1px solid var(--danger); background:transparent; color:var(--danger);
+    font:inherit; font-weight:700; font-size:12.5px; padding:6px 10px; border-radius:8px; cursor:pointer;
+  }
+  .btn-danger:hover{ background: color-mix(in srgb, var(--danger) 10%, transparent); }
+  .btn-icon{
+    border:1px solid var(--border); background:var(--surface); color:var(--muted);
+    font:inherit; font-weight:700; font-size:13px; width:30px; height:30px; border-radius:8px; cursor:pointer;
+  }
+  .btn-icon:hover{ border-color:var(--primary); color:var(--primary-ink); }
+
+  .chk-inline{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap; cursor:pointer; }
+  .chk-inline input{ accent-color:var(--primary); cursor:pointer; }
+
+  .print-panel{ display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:10px 12px; margin-top:10px; }
+  .print-panel-label{ font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap; display:inline-flex; align-items:center; gap:6px; }
+
+  .stats{ display:flex; gap:16px; flex-wrap:wrap; margin:14px 2px 16px; color:var(--muted); font-size:13px; }
+  .stats b{ color:var(--text); font-weight:700; }
+  .stats .dot{ opacity:.5; }
+
+  .notice{ display:flex; gap:10px; align-items:flex-start; background:var(--warn-bg); color:var(--warn-ink); border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:14px; line-height:1.45; }
+  .notice b{ font-weight:700; }
+  .notice.danger{ background:var(--danger-bg); color:var(--danger-ink); }
+  .notice.info{ background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color:var(--primary-ink); }
+
+  .resumo{ margin-bottom:16px; }
+  .dadas-linha{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:12px; }
+  .dadas-label{ font-size:11.5px; font-weight:700; color:var(--muted); margin-right:2px; }
+  .chip-dada{ font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:999px; background: color-mix(in srgb, var(--primary) 12%, var(--surface)); color:var(--primary-ink); border:1px solid color-mix(in srgb, var(--primary) 24%, var(--border)); white-space:nowrap; }
+  .dadas-vazio{ font-size:12px; color:var(--muted); font-style:italic; }
+  .semana-legenda{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-weight:700; color:var(--muted); margin: 2px 2px 6px; }
+  .semana-grid{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .semana-row{ display:grid; grid-template-columns: repeat(3,1fr); gap:6px; border-radius:12px; }
+  .semana-row.atual{ background: color-mix(in srgb, var(--accent) 7%, transparent); border-radius:14px; padding:4px; margin:-4px -4px 2px; }
+  .semana-cell{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 9px; min-height:52px; display:flex; flex-direction:column; justify-content:center; gap:1px; }
+  .semana-cell.vazio{ background:transparent; border:1px dashed var(--border); opacity:.45; }
+  .semana-cell .sc-data{ font-family:"IBM Plex Mono"; font-size:10.5px; font-weight:600; color:var(--muted); text-transform:uppercase; }
+  .semana-cell .sc-mod{ font-size:12px; font-weight:700; line-height:1.25; }
+  .semana-cell .sc-esp{ font-size:10.5px; color:var(--muted); }
+
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .month-label{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin: 18px 2px 2px; padding-top:4px; }
+  .month-label:first-child{ margin-top:0; }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow: var(--shadow); display:grid; grid-template-columns: 64px 1fr auto; gap:14px; align-items:start; }
+  .card.is-today{ background:var(--today-bg); border-color: var(--accent); }
+  .card.status-dada{ box-shadow: inset 3px 0 0 var(--primary), var(--shadow); }
+  .card.status-naodada{ box-shadow: inset 3px 0 0 var(--danger), var(--shadow); }
+  .datebox{ display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface-2); border-radius:10px; padding:8px 4px; text-align:center; line-height:1.1; }
+  .datebox .dow{ font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700; }
+  .datebox .dom{ font-family:"IBM Plex Mono"; font-weight:600; font-size:20px; }
+  .datebox .mon{ font-size:10px; color:var(--muted); text-transform:uppercase; }
+  .card .body{ min-width:0; }
+  .rowline{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
+  .chip{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background: var(--surface-2); color:var(--muted); }
+  .chip.codigo{ font-family:"IBM Plex Mono"; color:var(--primary-ink); background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
+  .chip.aulan{ color:var(--muted); }
+  .chip.acerto{ color:var(--accent-ink); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+  .modalidade{ font-weight:700; font-size:14.5px; }
+  .sumario{ font-size:13.5px; color:var(--text); line-height:1.5; margin:2px 0 0; }
+  .detalhe-toggle{ background:none; border:none; color:var(--muted); font:inherit; font-size:12px; font-weight:600; padding:0; margin-top:6px; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+  .detalhado{ font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); display:none; }
+  .detalhado.open{ display:block; }
+  .actions{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
+  .status-toggle{ display:flex; gap:4px; }
+  .st-btn{ flex:1; border:1px solid var(--border); background:var(--surface); color:var(--muted); font:inherit; font-weight:700; font-size:11px; padding:6px 6px; border-radius:7px; cursor:pointer; white-space:nowrap; }
+  .st-btn:hover{ border-color:var(--primary); }
+  .st-btn.st-dada.active{ background: color-mix(in srgb, var(--primary) 18%, var(--surface)); color:var(--primary-ink); border-color:var(--primary); }
+  .st-btn.st-naodada.active{ background: color-mix(in srgb, var(--danger) 16%, var(--surface)); color:var(--danger-ink); border-color:var(--danger); }
+  .copy-btn{ border:1px solid var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color:var(--primary-ink); font:inherit; font-weight:700; font-size:12.5px; padding:8px 12px; border-radius:9px; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+  .copy-btn.copied{ background:var(--primary); color:var(--surface); border-color:var(--primary); }
+  .space-tag{ font-size:11px; color:var(--muted); text-align:center; font-weight:600; }
+  .empty{ text-align:center; color:var(--muted); padding: 40px 16px; font-size:14px; }
+
+  @media (max-width:560px){
+    .card{ grid-template-columns: 52px 1fr; }
+    .actions{ grid-column: 1 / -1; flex-direction:column; }
+    .actions .row-mobile{ display:flex; flex-direction:row; gap:8px; }
+    .copy-btn{ flex:1; justify-content:center; }
+    .datebox{ padding:6px 2px; }
+    .datebox .dom{ font-size:17px; }
+    .semana-cell{ padding:6px 7px; min-height:46px; }
+    .semana-cell .sc-mod{ font-size:11px; }
+    .print-panel{ padding:10px; }
+  }
+
+  .toast{ position:fixed; left:50%; bottom: calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(20px); background:var(--text); color:var(--bg); font-weight:600; font-size:13px; padding:10px 16px; border-radius:999px; box-shadow: var(--shadow); opacity:0; transition: opacity .18s ease, transform .18s ease; pointer-events:none; z-index:20; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  footer.note{ margin-top:26px; color:var(--muted); font-size:12px; text-align:center; line-height:1.6; }
+
+  /* ---------- Configuração / editores ---------- */
+  .cfg-tabs{ display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:11px; margin-bottom:16px; flex-wrap:wrap; }
+  .cfg-tabs button{ border:none; background:transparent; color:var(--muted); font:inherit; font-weight:700; font-size:13px; padding:9px 12px; border-radius:8px; cursor:pointer; }
+  .cfg-tabs button.active{ background:var(--surface); color:var(--text); box-shadow: var(--shadow); }
+
+  .cfg-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: var(--shadow); margin-bottom:14px; }
+  .panel h3{ margin:0 0 4px; font-size:15px; }
+  .panel .sub{ margin:0 0 12px; color:var(--muted); font-size:12.5px; line-height:1.5; }
+
+  .field-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:10px; }
+  .field{ display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+
+  .grid-espacos{ display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
+  @media (max-width:700px){ .grid-espacos{ grid-template-columns: repeat(3, 1fr); } }
+  .grid-espacos .banda-lab{ font-size:10px; color:var(--muted); text-align:center; font-weight:700; }
+
+  .turma-card{ border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  .turma-card > summary{ list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:10px; background:var(--surface-2); }
+  .turma-card > summary::-webkit-details-marker{ display:none; }
+  .turma-card .tc-code{ font-weight:800; font-size:14px; }
+  .turma-card .tc-sub{ font-size:12px; color:var(--muted); }
+  .turma-card .tc-body{ padding:14px; }
+  .esp-block{ margin-bottom:10px; }
+  .esp-block > .lab{ font-size:11.5px; font-weight:700; color:var(--muted); margin-bottom:5px; }
+
+  table.ed-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.ed-table th, table.ed-table td{ border:1px solid var(--border); padding:7px 8px; text-align:left; vertical-align:top; }
+  table.ed-table th{ background:var(--surface-2); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
+  table.ed-table input, table.ed-table textarea{ width:100%; padding:6px 8px; font-size:13px; }
+
+  .conteudo-block{ border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .conteudo-block .cb-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .conteudo-block .cb-head .nome{ font-weight:800; font-size:14.5px; }
+  .conteudo-block .cb-head .n{ font-size:12px; color:var(--muted); }
+  .aula-row{ border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px; background:var(--surface-2); }
+  .aula-row-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .aula-row-head .idx{ font-size:11.5px; font-weight:700; color:var(--muted); }
+  .aula-row-actions{ display:flex; gap:4px; }
+  .aula-field{ margin-bottom:6px; }
+  .aula-field label{ font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; display:block; margin-bottom:3px; }
+  .aula-field input, .aula-field textarea{ width:100%; min-width:260px; }
+
+  #print-area{ display:none; }
+  @media print{
+    body > *:not(#print-area){ display:none !important; }
+    #print-area{ display:block !important; }
+    body{ padding:0; background:#fff; color:#111; }
+    @page{ size:A4 landscape; margin:12mm; }
+    #print-area{ font-family:Arial, Helvetica, sans-serif; }
+    #print-area h1{ font-size:18px; margin:0 0 4px; }
+    #print-area .p-sub{ font-size:11px; margin:0 0 12px; color:#333; }
+    #print-area h2{ font-size:13px; margin:14px 0 6px; color:#0b5d3b; page-break-after:avoid; }
+    #print-area table{ width:100%; border-collapse:collapse; margin-bottom:4px; }
+    #print-area th, #print-area td{ border:1px solid #999; padding:4px 6px; font-size:9.5px; text-align:left; vertical-align:top; }
+    #print-area th{ background:#0b5d3b !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #print-area tbody tr:nth-child(even) td{ background:#f4f4f4 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #print-area th.center, #print-area td.center{ text-align:center; white-space:nowrap; }
+    #print-area thead{ display:table-header-group; }
+    #print-area tr{ page-break-inside:avoid; }
+    #print-area .p-pend{ margin: 2px 0 14px; padding:6px 9px; border:1px solid #c0402c; border-left:4px solid #c0402c; font-size:9.5px; line-height:1.4; background:#fbe7e4 !important; color:#111; -webkit-print-color-adjust:exact; print-color-adjust:exact; page-break-inside:avoid; }
+    #print-area .p-pend b{ color:#8c2c1f; }
+    #print-area .p-dadas{ margin: 2px 0 8px; padding:6px 9px; border:1px solid #1f5d50; border-left:4px solid #1f5d50; font-size:9.5px; line-height:1.4; background:#e6f0ea !important; color:#111; -webkit-print-color-adjust:exact; print-color-adjust:exact; page-break-inside:avoid; }
+    #print-area .p-dadas b{ color:#0e332b; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Roteiro EF · aplicação independente, sem IA</p>
+    <h1>Roteiro EF</h1>
+    <div class="toptabs" role="tablist">
+      <button id="toptab-roteiro" class="active" type="button">📋 Roteiro</button>
+      <button id="toptab-config" type="button">⚙️ Configuração</button>
+    </div>
+  </header>
+
+  <!-- ======================= VISTA: ROTEIRO ======================= -->
+  <section id="view-roteiro">
+    <div class="controls">
+      <select id="sel-turma" aria-label="Turma"></select>
+      <div class="tabs" id="tabs-periodo" role="tablist" aria-label="Período"></div>
+      <div class="spacer"></div>
+      <button class="btn-ghost" id="btn-hoje" type="button">📍 Hoje</button>
+    </div>
+    <div class="print-panel">
+      <span class="print-panel-label">🖨️ Calendarização de conteúdos em PDF</span>
+      <label class="chk-inline"><input type="checkbox" id="chk-dadas"> Incluir aulas lecionadas</label>
+      <label class="chk-inline"><input type="checkbox" id="chk-pend"> Incluir aulas não lecionadas</label>
+      <div class="spacer"></div>
+      <button class="btn-ghost" id="btn-pdf" type="button">Gerar PDF</button>
+    </div>
+    <div class="stats" id="stats"></div>
+
+    <div class="resumo" id="resumo"></div>
+    <div id="notice-area"></div>
+    <main class="list" id="list"></main>
+
+    <footer class="note">
+      Datas e espaços calculados a partir do calendário letivo, do mapa de rotação de espaços e da sequência de conteúdos — tudo editável em "Configuração", sem código.<br>
+      "Copiar sumário" copia o texto pronto a colar no campo de sumário do Inovar. Esta aplicação corre inteiramente no seu browser: nada é enviado para nenhum servidor.
+    </footer>
+  </section>
+
+  <!-- ======================= VISTA: CONFIGURAÇÃO ======================= -->
+  <section id="view-config" hidden>
+    <div class="cfg-actions">
+      <button class="btn-ghost" id="btn-exportar" type="button">⬇️ Exportar dados (.json)</button>
+      <button class="btn-ghost" id="btn-importar" type="button">⬆️ Importar dados (.json)</button>
+      <input type="file" id="file-importar" accept="application/json" hidden>
+      <button class="btn-ghost" id="btn-repor" type="button">↺ Repor exemplo 2026/2027</button>
+      <div class="spacer"></div>
+      <span class="chk-inline" id="save-indicator" style="opacity:.7"></span>
+    </div>
+    <div class="cfg-tabs" role="tablist">
+      <button id="cfgtab-turmas" class="active" type="button">Turmas e espaços</button>
+      <button id="cfgtab-calendario" type="button">Calendário letivo</button>
+      <button id="cfgtab-conteudos" type="button">Sequência de conteúdos</button>
+    </div>
+    <div id="cfg-turmas"></div>
+    <div id="cfg-calendario" hidden></div>
+    <div id="cfg-conteudos" hidden></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="print-area" aria-hidden="true"></div>
+
+<script id="dados-motor-default" type="application/json">{"turmasAll":[["7A",3,5,["Exterior 1","Ginásio","Pavilhão","Exterior 1","Ginásio","Exterior 1"],["Pavilhão","Ginásio","Pavilhão","Pavilhão","Ginásio","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"]],["7B",4,2,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"]],["7C",1,3,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["7D",2,5,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"]],["7E",2,5,["Exterior 1","Ginásio","Pavilhão","Exterior 1","Ginásio","Exterior 1"],["Ginásio","Ginásio","Pavilhão","Pavilhão","Ginásio","Ginásio"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["7F",4,1,["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Exterior 1","Exterior 1","Ginásio","Pavilhão","Exterior 1","Exterior 1"]],["8A",3,5,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"]],["8B",2,4,["Pavilhão","Exterior 1","Ginásio","Pavilhão","Exterior 1","Pavilhão"],["Pavilhão","Pavilhão","Ginásio","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["8C",2,4,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"]],["8D",3,1,["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Ginásio","Pavilhão","Exterior 1","Exterior 1","Ginásio","Ginásio"]],["8E",1,3,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["8F",4,2,["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9A",5,3,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9B",3,1,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9C",1,5,["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Ginásio","Pavilhão","Ginásio","Pavilhão","Ginásio","Ginásio"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9D",5,3,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9E",1,4,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1","Exterior 1"]],["9F",4,2,["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"],["Pavilhão","Ginásio","Pavilhão","Ginásio","Pavilhão","Pavilhão"]]],"espacos":["Exterior 1","Ginásio","Pavilhão"],"rowsTabela":[["BASQ","",[2,null,"1"],[null,"X",null]],["GINS","",[null,"1",null],["X",null,"X"]],["ATLC","",["1",null,2],[null,"X",null]],["TM","",[null,"1",2],["X",null,null]],["FUT","",[2,null,"1"],[null,"X",null]],["AND","",[2,null,"1"],[null,"X",null]],["GINA","",[null,"1",null],["X",null,"X"]],["ATLS","Salto em Comprimento",["1",null,null],[null,"X","X"]],["ATLS","Salto em Altura",[null,"1",null],["X",null,null]],["DAN","",[null,"1",2],["X",null,null]],["BAD","",[null,2,"1"],["X",null,null]],["VOL","",[2,null,"1"],[null,"X",null]],["GINR","",[null,"1",null],["X",null,"X"]],["ATLL","",["1",null,null],[null,"X","X"]],["ORI","",["1",null,null],[null,null,null]],["APF","",[null,null,null],["X",null,null]],["CONH","",[null,null,null],[null,null,null]]],"gradePeriodos":{"7":{"P1":[["BASQ",12],["GINS",8],["ATLC",5],["TM",6],["APF",6],["CONH",2]],"P2":[["FUT",7],["AND",7],["GINA",5],["ATLS",4],["DAN",3],["APF",3],["CONH",2]],"P3":[["VOL",10],["GINR",6],["ATLL",3],["ORI",2],["APF",3],["CONH",1]]},"8":{"P1":[["BASQ",12],["GINS",8],["ATLC",5],["TM",6],["APF",6],["CONH",2]],"P2":[["FUT",7],["AND",7],["GINA",5],["ATLS",4],["DAN",2],["APF",3],["CONH",2]],"P3":[["VOL",10],["GINR",6],["ATLL",3],["ORI",2],["APF",3],["CONH",1]]},"9":{"P1":[["BASQ",12],["GINS",8],["ATLC",5],["TM",6],["APF",6],["CONH",2]],"P2":[["FUT",7],["AND",7],["GINA",5],["ATLS",4],["BAD",2],["DAN",3],["APF",3],["CONH",2]],"P3":[["VOL",12],["GINR",6],["ATLL",3],["APF",3],["CONH",1]]}},"periodoKeys":["P1","P2","P3"],"jdcGradeKeyed":["AND","BASQ","FUT","VOL"],"gradeKeyedPlain":["ATLL","ATLS","GINS","TM"],"sheetName":{"BASQ":"Basquetebol","GINS":"Ginástica de Solo","ATLC":"Atletismo - Corridas","TM":"Ténis de Mesa","FUT":"Futebol","AND":"Andebol","GINA":"Ginástica de Aparelhos","ATLS":"Atletismo - Saltos","DAN":"Dança","VOL":"Voleibol","GINR":"Ginástica Rítmica","ATLL":"Atletismo - Lançamentos","ORI":"Orientação","APF":"Aptidão Física","CONH":"Conhecimentos","BAD":"Badminton"},"lessonContent":{"BASQ":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: receção e passe (peito e picado), a pares e em situação de exercício, parados; abordagem das regras principais da modalidade (número de jogadores, formas de contagem de pontos e principais violações).","Introdução e avaliação diagnóstica da receção e do passe; regras principais da modalidade.","Introdução / Avaliação diagnóstica"],["Exercitação do passe e receção em deslocamento; situação de 2x0; revisão das regras principais (faltas pessoais e reposições de bola em jogo).","Exercitação do passe e receção; revisão das regras principais (faltas pessoais e reposição da bola em jogo).","Exercitação / Consolidação"],["Exercitação do drible de progressão; situação de 1x0 e 1x1; regra dos 5 segundos com a bola na mão.","Exercitação do drible de progressão; situação de 1x0 e 1x1; regra dos 5 segundos com a bola na mão.","Exercitação / Consolidação"],["Exercitação da paragem a um tempo e do lançamento em apoio (parado); situação de 1x0 (receção, paragem e lançamento); regra dos 3 segundos na zona restritiva.","Exercitação da paragem e do lançamento em apoio; situação de 1x0; regra dos 3 segundos.","Exercitação / Consolidação"],["Jogo condicionado 2x1, sem drible, aplicando a paragem a um tempo e o lançamento em apoio já introduzidos; revisão da regra dos 3 segundos na zona restritiva.","Jogo condicionado 2x1, sem drible; revisão da regra dos 3 segundos.","Exercitação / Consolidação"],["Exercitação do lançamento em apoio, com oposição parcial (passiva); situação de 2x1, criando superioridade numérica ofensiva; regra da bola presa (alternância de posse).","Exercitação do lançamento em apoio; situação de 2x1; regra da bola presa.","Exercitação / Consolidação"],["Exercitação da mudança de direção e de mão pela frente, em situação de 1x1, sob oposição; regra dos passos (travelling).","Exercitação da mudança de direção; situação de 1x1; regra dos passos.","Exercitação / Consolidação"],["Exercitação do enquadramento defensivo individual (postura e deslocamento defensivo), em situação de 1x1 organizado; regra da falta pessoal (contacto ilegal).","Exercitação do enquadramento defensivo individual; situação de 1x1; regra da falta pessoal.","Exercitação / Consolidação"],["Exercitação em situação de 2x2, aplicando os conteúdos técnico-táticos abordados (passe, drible, lançamento e defesa individual); regra da reposição de bola (lateral e fundo).","Exercitação em situação de 2x2; regra da reposição de bola.","Exercitação / Consolidação"],["Jogo condicionado 3x3, com regras simplificadas (sem defesa de zona), consolidando os conteúdos técnico-táticos abordados como preparação para o jogo formal. Aula de acerto do calendário.","Jogo condicionado 3x3, com regras simplificadas. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 3x3 (campo reduzido) — aplicação dos conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com aplicação integrada de todas as regras trabalhadas. Aula de acerto do calendário.","Jogo formal 3x3 (campo reduzido), alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: revisão da receção, do passe e do lançamento em apoio, em situação de 2x0; revisão e aprofundamento das regras principais (faltas pessoais e reposições de bola em jogo).","Introdução e avaliação diagnóstica: revisão da receção, do passe e do lançamento em apoio; situação de 2x0.","Introdução / Avaliação diagnóstica"],["Exercitação do passe em deslocamento, sob oposição parcial; situação de 2x0 progredindo para 2x1; regra do campo dividido (violação de recuo de bola).","Exercitação do passe em deslocamento; situação de 2x0/2x1; regra do campo dividido.","Exercitação / Consolidação"],["Exercitação do drible de progressão e da mudança de direção/de mão, em situação de 1x1, com oposição; regra do duplo drible.","Exercitação do drible de progressão e da mudança de direção; situação de 1x1; regra do duplo drible.","Exercitação / Consolidação"],["Exercitação das paragens e da rotação sobre um apoio (pivot), em situação de 1x0 sob pressão passiva; regra dos passos (travelling), com ênfase no pivot.","Exercitação das paragens e do pivot; situação de 1x0; regra dos passos.","Exercitação / Consolidação"],["Jogo condicionado 2x1, aplicando as paragens e o pivot já introduzidos; revisão da regra dos passos (travelling).","Jogo condicionado 2x1, com paragens e pivot; revisão da regra dos passos.","Exercitação / Consolidação"],["Introdução e exercitação do lançamento na passada, em situação de 1x0 e, progressivamente, de 1x1; regra da interferência na bola (goaltending).","Introdução do lançamento na passada; situação de 1x0/1x1; regra da interferência na bola.","Exercitação / Consolidação"],["Exercitação em situação de 1x1, ofensivo e defensivo: drible de progressão e mudança de direção sob pressão de um defesa, com finalização (em apoio ou na passada); regra da falta em ataque (carga ofensiva).","Exercitação em situação de 1x1, com finalização; regra da falta em ataque.","Exercitação / Consolidação"],["Exercitação em situação de 2x1: passe, desmarcação e finalização, criando superioridade numérica ofensiva; regra da violação de posse (tempo de posse de bola).","Exercitação em situação de 2x1; regra da violação de posse.","Exercitação / Consolidação"],["Exercitação do enquadramento defensivo, individual e coletivo, em situação de 2x2; noções e prática de arbitragem.","Exercitação do enquadramento defensivo individual e coletivo; situação de 2x2.","Exercitação / Consolidação"],["Jogo condicionado 4x4, com regras simplificadas, consolidando os conteúdos técnico-táticos abordados como preparação para o jogo formal 5x5. Aula de acerto do calendário.","Jogo condicionado 4x4, com regras simplificadas. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 5x5 — aplicação dos conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Jogo formal 5x5, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão dos conteúdos do nível Introdução, em situação de jogo reduzido (3x3) diagnóstico; critérios de apreciação do nível Elementar.","Introdução e avaliação diagnóstica: revisão do nível Introdução; jogo reduzido (3x3) diagnóstico.","Introdução / Avaliação diagnóstica"],["Exercitação do drible de proteção da bola, sob oposição intensa; situação de 1x1; regra do campo dividido (8 segundos).","Exercitação do drible de proteção da bola; situação de 1x1; regra do campo dividido.","Exercitação / Consolidação"],["Consolidação do lançamento na passada, em situação de 1x0 e 1x1, com oposição; regra da interferência na bola (goaltending).","Consolidação do lançamento na passada; situação de 1x0/1x1; regra da interferência na bola.","Exercitação / Consolidação"],["Exercitação em situação de 1x1, ofensivo e defensivo: drible de progressão, de proteção da bola e mudança de direção, com finalização variada (em apoio ou na passada); regra da falta em ataque.","Exercitação em situação de 1x1, com finalização variada; regra da falta em ataque.","Exercitação / Consolidação"],["Jogo condicionado 2x1, consolidando o drible e a finalização já exercitados, com ênfase na leitura da superioridade numérica; revisão da regra da falta em ataque.","Jogo condicionado 2x1; revisão da regra da falta em ataque.","Exercitação / Consolidação"],["Exercitação em situação de 2x1: passe, desmarcação e finalização, criando superioridade numérica ofensiva; regra da reposição rápida (contra-ataque).","Exercitação em situação de 2x1; regra da reposição rápida.","Exercitação / Consolidação"],["Exercitação em situação de 2x2: cooperação ofensiva (passe e corte) e leitura da oposição defensiva; regra do duplo drible.","Exercitação em situação de 2x2; regra do duplo drible.","Exercitação / Consolidação"],["Exercitação do enquadramento defensivo coletivo: ajuda e recuperação, em situação de 2x2 defensivo; noções e prática de arbitragem.","Exercitação do enquadramento defensivo coletivo: ajuda e recuperação; situação de 2x2.","Exercitação / Consolidação"],["Exercitação em situações de 3x2 e 3x1: exploração da superioridade e da igualdade numérica, com finalização; regra da falta técnica (comportamento antidesportivo).","Exercitação em situações de 3x2 e 3x1; regra da falta técnica.","Exercitação / Consolidação"],["Jogo condicionado 4x4, com regras simplificadas, consolidando o nível Elementar como preparação para o jogo formal 5x5. Aula de acerto do calendário.","Jogo condicionado 4x4, com regras simplificadas; consolidação do nível Elementar. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 5x5 — consolidação dos conteúdos técnico-táticos do nível Elementar, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Jogo formal 5x5 — consolidação do nível Elementar. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]]},"GINS":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: rolamento à frente, em plano inclinado e/ou com ajuda; critérios de apreciação (correção técnica, expressão e combinação).","Introdução / Avaliação diagnóstica"],["Exercitação do rolamento à frente em superfície plana e introdução ao rolamento à retaguarda, com ajuda; introdução a elementos de ligação: posições de equilíbrio estático (ex.: avião) e passos de ligação.","Exercitação / Consolidação"],["Exercitação dos rolamentos à frente e à retaguarda, isolados e em combinação simples, com os elementos de ligação já introduzidos (passos, posições de equilíbrio).","Exercitação / Consolidação"],["Exercitação do rolamento à retaguarda; introdução ao apoio facial invertido (pino de braços), com ajuda; elementos de ligação: saltos simples (engrupado, em extensão) e posição de flexibilidade (ponte).","Exercitação / Consolidação"],["Consolidação dos rolamentos à frente e à retaguarda encadeados; exercitação do pino de braços com ajuda; combinação com elementos de ligação (passo, salto, posição de equilíbrio).","Exercitação / Consolidação"],["Exercitação livre do pino de braços e dos elementos de ligação já abordados, com vista à seleção dos elementos para o esquema gímnico. Aula de acerto do calendário.","Exercitação / Consolidação"],["Composição e ensaio de um esquema gímnico individual simples, combinando rolamentos, um elemento de equilíbrio e elementos de ligação (passos, saltos, posições de flexibilidade).","Exercitação / Consolidação"],["Apresentação e avaliação sumativa do esquema gímnico.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: revisão dos rolamentos à frente e à retaguarda, encadeados; critérios de apreciação (nível de consolidação/progressão).","Introdução / Avaliação diagnóstica"],["Exercitação dos rolamentos à frente e à retaguarda encadeados e do pino de braços, com e sem ajuda, consolidando a técnica antes de avançar para novos elementos.","Exercitação / Consolidação"],["Consolidação do apoio facial invertido (pino de braços), com e sem ajuda; introdução à roda, com ajuda.","Exercitação / Consolidação"],["Exercitação da roda; consolidação de elementos de ligação: posições de flexibilidade (ponte, avião) e saltos (engrupado, em extensão, com meia-pirueta).","Exercitação / Consolidação"],["Exercitação da combinação de rolamentos, pino de braços e roda, encadeados com elementos de ligação (passos, saltos, posições de equilíbrio e de flexibilidade).","Exercitação / Consolidação"],["Exercitação livre da combinação de rolamentos, pino de braços, roda e elementos de ligação, à escolha do aluno, em preparação para a composição do esquema. Aula de acerto do calendário.","Exercitação / Consolidação"],["Composição e ensaio do esquema gímnico individual ou de grupo, integrando rolamentos, pino de braços, roda e elementos de ligação.","Exercitação / Consolidação"],["Apresentação e avaliação sumativa do esquema gímnico.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão dos rolamentos, do pino de braços e da roda, encadeados; critérios de apreciação (nível de consolidação).","Introdução / Avaliação diagnóstica"],["Exercitação do rolamento à retaguarda com passagem por pino de braços (afundo); consolidação da roda.","Exercitação / Consolidação"],["Exercitação da combinação de rolamentos, do pino de braços (com passagem por afundo) e da roda, encadeados, consolidando a fluidez antes de avançar para a rodada.","Exercitação / Consolidação"],["Introdução à rodada (roda com chegada a pés juntos), com ajuda; consolidação de elementos de ligação mais exigentes (salto engrupado com meia-pirueta, posição de flexibilidade avançada — espargata).","Exercitação / Consolidação"],["Exercitação da combinação de todos os elementos abordados (rolamentos, pino de braços, roda e rodada), encadeados com elementos de ligação, em sequência fluida.","Exercitação / Consolidação"],["Exercitação livre da combinação de todos os elementos abordados e dos elementos de ligação, à escolha do aluno, em preparação para a composição do esquema. Aula de acerto do calendário.","Exercitação / Consolidação"],["Composição e ensaio do esquema gímnico individual ou de grupo, com maior exigência técnica e de combinação de elementos.","Exercitação / Consolidação"],["Apresentação e avaliação sumativa do esquema gímnico.","Avaliação sumativa"]]},"ATLC":{"5":[["Apresentação da unidade didática e avaliação diagnóstica: técnica de corrida de velocidade; noções de regulamento e função de juiz.","Introdução / Avaliação diagnóstica"],["Exercitação da corrida de velocidade e da saída de blocos.","Exercitação / Consolidação"],["Exercitação da corrida de resistência (fundo/meio-fundo); noções de ritmo e gestão de esforço.","Exercitação / Consolidação"],["Exercitação das estafetas (passagem de testemunho); noções de regulamento das provas de estafetas.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa"]]},"ATLS":{"7":[["Apresentação da unidade didática e exercitação do salto em comprimento (corrida de balanço, chamada e receção); noções de regulamento e função de juiz.","Introdução / Exercitação"],["Avaliação sumativa do salto em comprimento.","Avaliação sumativa"],["Introdução e exercitação do salto em altura (técnica de tesoura); noções de regulamento e função de juiz.","Introdução / Exercitação"],["Avaliação sumativa do salto em altura.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e revisão/exercitação do salto em comprimento, com maior exigência técnica (velocidade de balanço e impulsão); noções de regulamento e função de juiz.","Introdução / Exercitação"],["Avaliação sumativa do salto em comprimento.","Avaliação sumativa"],["Exercitação do salto em altura (técnica de tesoura); noções de regulamento e função de juiz.","Introdução / Exercitação"],["Avaliação sumativa do salto em altura.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e revisão/consolidação do salto em comprimento, com maior exigência técnica e de desempenho; noções de regulamento e função de juiz.","Introdução / Exercitação"],["Avaliação sumativa do salto em comprimento.","Avaliação sumativa"],["Consolidação do salto em altura (técnica de tesoura), com maior exigência técnica e de desempenho.","Introdução / Exercitação"],["Avaliação sumativa do salto em altura.","Avaliação sumativa"]]},"ATLL":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: técnica de lançamento do peso sem deslize; noções de regulamento e função de juiz.","Introdução / Avaliação diagnóstica"],["Exercitação da técnica de lançamento do peso sem deslize: colocação, extensão e finalização do lançamento.","Exercitação / Consolidação"],["Avaliação sumativa do lançamento do peso sem deslize.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: técnica de lançamento do peso com deslize; noções de regulamento e função de juiz.","Introdução / Avaliação diagnóstica"],["Exercitação do deslize e da fase de finalização do lançamento do peso.","Exercitação / Consolidação"],["Avaliação sumativa do lançamento do peso com deslize.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão da técnica de lançamento do peso com deslize; noções de regulamento e função de juiz.","Introdução / Avaliação diagnóstica"],["Consolidação do deslize e da fase de finalização do lançamento do peso, com maior exigência técnica e de desempenho.","Exercitação / Consolidação"],["Avaliação sumativa do lançamento do peso com deslize.","Avaliação sumativa"]]},"ORI":{"2":[["Introdução e exercitação: leitura e interpretação de mapa e legenda; noções de orientação da carta; regras de participação e de preservação do ambiente.","Introdução / Exercitação"],["Percurso de orientação elementar (no espaço escolar) e avaliação sumativa.","Avaliação sumativa"]]},"FUT":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: condução de bola e passe curto, parados e em situação de exercício; situação de 1x0 (condução até um alvo); regras principais: fora de jogo (noção) e lançamento lateral.","Introdução e avaliação diagnóstica: condução e passe curto; situação de 1x0; regras: fora de jogo e lançamento lateral.","Introdução / Avaliação diagnóstica"],["Exercitação do passe e da receção a curta e média distância, em deslocamento; situação de 2x0; regra do pontapé de canto e de baliza.","Exercitação do passe e da receção em deslocamento; situação de 2x0; regra dos pontapés de canto e de baliza.","Exercitação / Consolidação"],["Exercitação da condução de bola e do drible de proteção, sob oposição parcial; situação de 1x1 (disputa e proteção da bola, sem finalização); regra da disputa leal de bola (carga regular).","Exercitação da condução e do drible; situação de 1x1; regra da disputa leal de bola.","Exercitação / Consolidação"],["Exercitação do remate à baliza parada e em movimento; situação de 1x0 finalizador; regra do fora de jogo em situação de finalização.","Exercitação do remate; situação de 1x0 finalizador; regra do fora de jogo.","Exercitação / Consolidação"],["Exercitação do passe, da receção e da desmarcação, sob oposição parcial; situação de 2x1, criando superioridade numérica ofensiva; regra da marcação (homem a homem). Aula de acerto do calendário.","Exercitação do passe e da desmarcação; situação de 2x1; regra da marcação. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 4x4 (campo reduzido), aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com aplicação integrada das regras trabalhadas. Aula de acerto do calendário.","Jogo formal 4x4 (campo reduzido), alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: revisão da condução, do passe e da receção, em situação de 2x0; revisão das regras principais (fora de jogo e lançamento lateral).","Introdução e avaliação diagnóstica: revisão da condução, do passe e da receção; situação de 2x0.","Introdução / Avaliação diagnóstica"],["Exercitação do passe e da receção em profundidade (para espaços livres), sob oposição parcial; situação de 2x1; regra do pontapé de canto e de baliza (revisão e aprofundamento).","Exercitação do passe e da receção em profundidade; situação de 2x1; regra dos pontapés de canto e de baliza.","Exercitação / Consolidação"],["Exercitação da condução de bola e do drible, sob oposição; situação de 1x1, com finalização à baliza; regra do livre direto e indireto.","Exercitação da condução e do drible; situação de 1x1, com finalização; regra do livre direto e indireto.","Exercitação / Consolidação"],["Exercitação do remate à baliza em movimento, sob pressão; situação de 1x0 finalizador; regra do cartão amarelo.","Exercitação do remate à baliza em movimento; situação de 1x0 finalizador; regra do cartão amarelo.","Exercitação / Consolidação"],["Exercitação do enquadramento defensivo (marcação e desarme) e da superioridade numérica; situação de 3x2; regra do fora de jogo em superioridade numérica. Aula de acerto do calendário.","Exercitação do enquadramento defensivo; situação de 3x2; regra do fora de jogo. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal, aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com revisão integrada das regras principais. Aula de acerto do calendário.","Jogo formal, alternando as funções de jogador e de árbitro; revisão das regras principais. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão dos conteúdos do nível Introdução (condução, passe, receção, remate), em situação de jogo reduzido (3x3) diagnóstico; regra: revisão geral (fora de jogo, faltas, cartões).","Introdução e avaliação diagnóstica: revisão do nível Introdução; jogo reduzido (3x3) diagnóstico.","Introdução / Avaliação diagnóstica"],["Exercitação do passe, da receção e da desmarcação em apoio e em profundidade, sob pressão; situações de 2x1 e 2x2; regra do fora de jogo em profundidade.","Exercitação do passe e da desmarcação; situações de 2x1 e 2x2; regra do fora de jogo em profundidade.","Exercitação / Consolidação"],["Exercitação da condução, do drible e da finta, sob pressão intensa; situação de 1x1, com finalização rápida; regra da disputa de bola e do cartão amarelo.","Exercitação da condução e do drible sob pressão; situação de 1x1, com finalização; regra do cartão amarelo.","Exercitação / Consolidação"],["Exercitação do remate em contexto de jogo (após construção coletiva); situação de 3x2, com enquadramento defensivo coletivo; regra do penálti (grande penalidade).","Exercitação do remate em contexto de jogo; situação de 3x2; regra do penálti.","Exercitação / Consolidação"],["Jogo condicionado 4x4, com regras simplificadas, aplicando o remate em contexto de jogo e o enquadramento defensivo coletivo já exercitados; preparação para o jogo formal. Aula de acerto do calendário.","Jogo condicionado 4x4, com regras simplificadas; preparação para o jogo formal. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal, aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro; regra das substituições e da arbitragem. Aula de acerto do calendário.","Jogo formal, alternando as funções de jogador e de árbitro; regra das substituições. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]]},"AND":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: receção, passe e drible, parados e em situação de exercício; situação de 1x0; regras principais (passos, dribles, área de baliza).","Introdução e avaliação diagnóstica: receção, passe e drible; situação de 1x0; regras principais.","Introdução / Avaliação diagnóstica"],["Exercitação do drible de progressão em linha reta e do passe a curta distância, em situação de 2x0; regra dos 3 passos com a bola na mão.","Exercitação do drible de progressão e do passe a curta distância; situação de 2x0; regra dos 3 passos.","Exercitação / Consolidação"],["Exercitação do remate em apoio (parado), em situação de 1x0 finalizador; regra da área de baliza (semicírculo dos 6 metros).","Exercitação do remate em apoio; situação de 1x0 finalizador; regra da área de baliza.","Exercitação / Consolidação"],["Exercitação do drible e da finta, com oposição parcial (passiva); situação de 1x1, com finalização (remate em apoio); regra do contacto (carga) em defesa.","Exercitação do drible e da finta; situação de 1x1; regra do contacto em defesa.","Exercitação / Consolidação"],["Exercitação do passe e da receção em deslocamento, sob oposição parcial; situação de 2x1, criando superioridade numérica ofensiva; regra da reposição de bola (lateral e de baliza). Aula de acerto do calendário.","Exercitação do passe e da receção em deslocamento; situação de 2x1; regra da reposição de bola. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 4x4 (campo reduzido), aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com aplicação integrada das regras trabalhadas. Aula de acerto do calendário.","Jogo formal 4x4 (campo reduzido), alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: revisão da receção, do passe e do drible, em situação de 2x0; revisão das regras principais (passos, dribles, área de baliza).","Introdução e avaliação diagnóstica: revisão da receção, do passe e do drible; situação de 2x0.","Introdução / Avaliação diagnóstica"],["Exercitação do passe e da receção em deslocamento, sob oposição; situação de 2x1, criando superioridade numérica ofensiva; regra da área de baliza (violação por invasão).","Exercitação do passe e da receção em deslocamento; situação de 2x1; regra da área de baliza.","Exercitação / Consolidação"],["Exercitação do drible de progressão e da finta; situação de 1x1, com finalização (remate em apoio ou em suspensão); regra do contacto (carga) em 1x1.","Exercitação do drible de progressão e da finta; situação de 1x1; regra do contacto em 1x1.","Exercitação / Consolidação"],["Exercitação do remate em apoio e em suspensão, em situação de 1x0 sob pressão; regra da exclusão de 2 minutos.","Exercitação do remate em apoio e em suspensão; situação de 1x0; regra da exclusão de 2 minutos.","Exercitação / Consolidação"],["Exercitação do enquadramento defensivo, individual e coletivo; situação de 3x2, explorando a superioridade e a igualdade numérica; regra dos 3 segundos com a bola imóvel. Aula de acerto do calendário.","Exercitação do enquadramento defensivo; situação de 3x2; regra dos 3 segundos com a bola imóvel. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal, aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com revisão integrada das regras principais. Aula de acerto do calendário.","Jogo formal, alternando as funções de jogador e de árbitro; revisão das regras principais. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão dos conteúdos do nível Introdução (receção, passe, drible, remate), em situação de jogo reduzido (4x4) diagnóstico; regra: revisão geral (passos, dribles, faltas).","Introdução e avaliação diagnóstica: revisão do nível Introdução; jogo reduzido (4x4) diagnóstico.","Introdução / Avaliação diagnóstica"],["Exercitação do passe e da receção em deslocamento, sob pressão; situações de 2x1 e 2x2; regra da área de baliza (violação por invasão).","Exercitação do passe e da receção em deslocamento; situações de 2x1 e 2x2; regra da área de baliza.","Exercitação / Consolidação"],["Exercitação do drible de progressão e da finta, sob pressão intensa; situação de 1x1, com finalização rápida; regra da falta e da exclusão (2 minutos).","Exercitação do drible e da finta sob pressão; situação de 1x1; regra da exclusão de 2 minutos.","Exercitação / Consolidação"],["Exercitação do remate em apoio e em suspensão, em contexto de jogo; situação de 3x2, com enquadramento defensivo coletivo; regra dos 7 metros (grande penalidade).","Exercitação do remate em contexto de jogo; situação de 3x2; regra dos 7 metros.","Exercitação / Consolidação"],["Jogo condicionado 4x4, com regras simplificadas, aplicando o remate em apoio/suspensão e o enquadramento defensivo coletivo já exercitados; preparação para o jogo formal. Aula de acerto do calendário.","Jogo condicionado 4x4, com regras simplificadas; preparação para o jogo formal. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal, aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro; regra dos passos e da dupla-posse (revisão). Aula de acerto do calendário.","Jogo formal, alternando as funções de jogador e de árbitro; revisão dos passos e da dupla-posse. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]]},"TM":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: pega da raquete e batimento de base (drive simples, sem efeito); situação de 1x1 cooperativa (manter a bola em jogo); regras principais: contagem de pontos e serviço.","Introdução / Avaliação diagnóstica"],["Exercitação do batimento de base (drive) e introdução ao serviço simples; situação de 1x1 cooperativa, com maior número de trocas de bola; regra da alternância do serviço.","Exercitação / Consolidação"],["Exercitação do batimento de base e do serviço, em situação de 1x1 cooperativa com maior exigência (troca de bola mais rápida e mais longa); revisão das regras já introduzidas.","Exercitação / Consolidação"],["Exercitação do batimento de base e do serviço, com maior precisão e colocação da bola; situação de 1x1 semicompetitiva (troca de bola com pontuação simplificada); regra das faltas de serviço.","Exercitação / Consolidação"],["Jogo condicionado em situação de 1x1 (só batimento de base, sem serviços com efeito, pontuação reduzida), como transição para o jogo competitivo; consolidação das regras. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo em situação de 1x1 competitiva, aplicando as regras como jogador e árbitro, e avaliação sumativa.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: pega da raquete e serviço; regras principais (contagem de pontos, serviço, faltas).","Introdução / Avaliação diagnóstica"],["Exercitação da devolução de bolas com efeito (drive e corte).","Exercitação / Consolidação"],["Exercitação da devolução de bolas com efeito, em situação de jogo condicionado 1x1 (troca de bola dirigida, sem serviço), como preparação para o jogo formal.","Exercitação / Consolidação"],["Jogo em situação de «individuais», aplicando as regras como jogador e árbitro.","Exercitação / Consolidação"],["Jogo em situação de «individuais», com regras condicionadas (ex.: obrigatoriedade de usar o corte), consolidando a aplicação das regras como jogador e árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo em situação de «a pares» e avaliação sumativa.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão da pega da raquete, do serviço e da devolução de bolas com efeito (drive e corte); regras principais (contagem de pontos, serviço, faltas).","Introdução / Avaliação diagnóstica"],["Exercitação da devolução de bolas com efeito (drive e corte), em situação de jogo condicionado 1x1 (troca de bola dirigida).","Exercitação / Consolidação"],["Exercitação do serviço e da devolução, em situação de 1x1 semicompetitiva (pontuação simplificada); revisão das regras de serviço e faltas.","Exercitação / Consolidação"],["Jogo em situação de «individuais», aplicando as regras como jogador e árbitro.","Exercitação / Consolidação"],["Jogo em situação de «individuais», com regras condicionadas, consolidando a aplicação das regras como jogador e árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo em situação de «a pares», aplicando as regras como jogador e árbitro, e avaliação sumativa.","Avaliação sumativa"]]},"BAD":{"2":[["Apresentação da unidade didática e avaliação diagnóstica: pega da raquete, serviço curto e longo e deslocamentos no campo; regras principais (contagem de pontos, serviço, faltas).","Introdução / Avaliação diagnóstica"],["Jogo em situação de «individuais» e «a pares», aplicando as regras como jogador e árbitro, e avaliação sumativa.","Avaliação sumativa"]]},"GINA":{"5":[["Apresentação da unidade didática e avaliação diagnóstica: salto de eixo/afastado no plinto (ou boque); critérios de apreciação.","Introdução / Avaliação diagnóstica"],["Consolidação do salto de eixo/afastado; segurança e ajuda.","Exercitação / Consolidação"],["Exercitação de elementos gímnicos em aparelho complementar (trave ou barra, conforme o material disponível).","Exercitação / Consolidação"],["Composição de um pequeno esquema com elementos de solo e de aparelhos.","Exercitação / Consolidação"],["Apresentação e avaliação sumativa do esquema.","Avaliação sumativa"]]},"DAN":{"2":[["Introdução e exercitação: exploração de elementos técnicos elementares (deslocamentos, ritmo, expressividade); construção de uma pequena sequência coreográfica individual ou de grupo.","Introdução / Exercitação"],["Apresentação e avaliação sumativa da coreografia.","Avaliação sumativa"]],"3":[["Apresentação da unidade didática e avaliação diagnóstica: exploração de elementos técnicos elementares (deslocamentos, ritmo, expressividade).","Introdução / Avaliação diagnóstica"],["Exercitação da construção e ensaio de uma sequência coreográfica individual ou de grupo, aplicando os critérios de expressividade, de acordo com os motivos da composição.","Exercitação / Consolidação"],["Apresentação e avaliação sumativa da coreografia.","Avaliação sumativa"]]},"VOL":{"7":[["Apresentação da unidade didática e avaliação diagnóstica: passe de dedos e manchete, a pares e em situação de exercício, parados; situação de 1x0 (autopasse); regras principais (rotação, toques por equipa, faltas).","Introdução e avaliação diagnóstica: passe de dedos e manchete; situação de 1x0; regras principais.","Introdução / Avaliação diagnóstica"],["Exercitação do passe de dedos, parado, em situação de 1x0 (autopasse) e 1x1 sobre a rede; regra dos dois toques consecutivos (double contact).","Exercitação do passe de dedos, parado; situação de 1x1 sobre a rede; regra dos dois toques consecutivos.","Exercitação / Consolidação"],["Exercitação do passe de dedos, em deslocamento curto, em situação de 1x1 sobre a rede; regra da invasão de campo sob a rede.","Exercitação do passe de dedos, em deslocamento curto; situação de 1x1; regra da invasão de campo.","Exercitação / Consolidação"],["Exercitação da manchete, parado, em situação de 1x1 sobre a rede; regra do toque de rede.","Exercitação da manchete, parado; situação de 1x1; regra do toque de rede.","Exercitação / Consolidação"],["Exercitação da manchete, em deslocamento curto, em situação de 1x1 sobre a rede; regra da bola fora (linhas delimitadoras).","Exercitação da manchete, em deslocamento curto; situação de 1x1; regra da bola fora.","Exercitação / Consolidação"],["Exercitação do serviço por baixo, em situação de 1x0 (serviço colocado para zona); regra da ordem de rotação no serviço.","Exercitação do serviço por baixo; situação de 1x0; regra da ordem de rotação.","Exercitação / Consolidação"],["Exercitação da receção de serviço (por baixo), em situação de 1x1 sobre a rede; regra dos quatro toques (four hits).","Exercitação da receção de serviço; situação de 1x1; regra dos quatro toques.","Exercitação / Consolidação"],["Exercitação da construção simples do 1.º/2.º toque e do remate simples (com passe alto); situação de 1x1 sobre a rede; regra do toque retido (carrying). Aula de acerto do calendário.","Exercitação da construção do 1.º/2.º toque e do remate; situação de 1x1; regra do toque retido. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 4x4 (campo reduzido), aplicando os conteúdos técnico-táticos abordados, alternando as funções de jogador e de árbitro, com aplicação integrada das regras trabalhadas. Aula de acerto do calendário.","Jogo formal 4x4 (campo reduzido), alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"8":[["Apresentação da unidade didática e avaliação diagnóstica: revisão do passe de dedos, da manchete e do serviço por baixo, em situação de 1x1 sobre a rede; revisão das regras principais.","Introdução e avaliação diagnóstica: revisão do passe de dedos, da manchete e do serviço por baixo; situação de 1x1.","Introdução / Avaliação diagnóstica"],["Exercitação do passe de dedos, com maior exigência de precisão e de deslocamento, em situação de 2x2; regra da rotação (posição incorreta).","Exercitação do passe de dedos, com maior exigência; situação de 2x2; regra da rotação.","Exercitação / Consolidação"],["Exercitação da manchete, com maior exigência de precisão e de deslocamento, em situação de 2x2; regra dos três toques por equipa.","Exercitação da manchete, com maior exigência; situação de 2x2; regra dos três toques por equipa.","Exercitação / Consolidação"],["Exercitação do serviço por baixo e por cima, em situação de 1x0 (serviço colocado); regra da ordem de serviço (revisão e aprofundamento).","Exercitação do serviço por baixo e por cima; situação de 1x0; regra da ordem de serviço.","Exercitação / Consolidação"],["Exercitação da receção de serviço e da construção do 1.º/2.º toque, em situação de 2x2; regra do toque simultâneo a dois (double hit).","Exercitação da receção de serviço e da construção; situação de 2x2; regra do toque simultâneo.","Exercitação / Consolidação"],["Exercitação do remate simples; situação de 1x1 sobre a rede, controlando o toque e finalizando o ataque; regra da invasão sob a rede.","Exercitação do remate simples; situação de 1x1; regra da invasão sob a rede.","Exercitação / Consolidação"],["Exercitação do enquadramento ofensivo e defensivo (rotação e cobertura); situação de 2x2; regra do bloco (contacto no bloco não conta como toque de equipa).","Exercitação da rotação e da cobertura; situação de 2x2; regra do bloco.","Exercitação / Consolidação"],["Jogo reduzido (3x3), aplicando os conteúdos técnico-táticos abordados, com aplicação das regras trabalhadas. Aula de acerto do calendário.","Jogo reduzido (3x3), aplicando os conteúdos técnico-táticos abordados. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal, alternando as funções de jogador e de árbitro, com revisão integrada das regras principais. Aula de acerto do calendário.","Jogo formal, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]],"9":[["Apresentação da unidade didática e avaliação diagnóstica: revisão do passe de dedos, da manchete e do serviço (nível Introdução), em situação de 2x2 diagnóstico; critérios de apreciação do nível Elementar.","Introdução e avaliação diagnóstica: revisão do nível Introdução; situação de 2x2 diagnóstico.","Introdução / Avaliação diagnóstica"],["Exercitação do passe de dedos e da manchete, com maior exigência de precisão e de deslocamento, em situação de 2x2; regra da rotação (revisão).","Exercitação do passe de dedos e da manchete, com maior exigência; situação de 2x2; regra da rotação.","Exercitação / Consolidação"],["Exercitação do serviço por cima (tipo ténis) e da receção organizada em formação (ex.: em W), em situação de 3x3; regra da ordem de serviço e da rotação.","Exercitação do serviço por cima e da receção organizada; situação de 3x3; regra da rotação.","Exercitação / Consolidação"],["Exercitação da construção do 2.º e 3.º toque com qualidade, orientando o ataque para diferentes zonas da rede, em situação de 3x3; regra dos três toques por equipa.","Exercitação da construção do 2.º e 3.º toque; situação de 3x3; regra dos três toques por equipa.","Exercitação / Consolidação"],["Exercitação do remate em apoio e em suspensão; situação de 1x1 sobre a rede, sob pressão ofensiva; regra da invasão sob a rede.","Exercitação do remate em apoio e em suspensão; situação de 1x1; regra da invasão sob a rede.","Exercitação / Consolidação"],["Exercitação do bloco individual; situação de 2x1, explorando a superioridade ofensiva sobre o bloco; regra do bloco (toque no bloco não conta para os três toques).","Exercitação do bloco individual; situação de 2x1; regra do bloco.","Exercitação / Consolidação"],["Exercitação do sistema de rotação com posições específicas (distribuidor, atacantes, líbero funcional); situação de 3x2; regra do líbero (restrições de ação).","Exercitação do sistema de rotação; situação de 3x2; regra do líbero.","Exercitação / Consolidação"],["Exercitação da transição defesa-ataque: cobertura do remate e contra-ataque, em situação de 3x3; regra do toque simultâneo a dois (double hit).","Exercitação da transição defesa-ataque; situação de 3x3; regra do toque simultâneo.","Exercitação / Consolidação"],["Jogo reduzido (4x4), aplicando os sistemas de receção e de rotação abordados, com aplicação das regras trabalhadas.","Jogo reduzido (4x4), aplicando os sistemas de receção e de rotação abordados.","Exercitação / Consolidação"],["Jogo formal 6x6, alternando as funções de jogador e de árbitro, com revisão integrada das regras principais. Aula de acerto do calendário.","Jogo formal 6x6, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Exercitação / Consolidação"],["Jogo formal 6x6 — consolidação dos conteúdos técnico-táticos do nível Elementar, alternando as funções de jogador e de árbitro. Aula de acerto do calendário.","Jogo formal 6x6 — consolidação do nível Elementar. Aula de acerto do calendário.","Exercitação / Consolidação"],["Avaliação sumativa.","Avaliação sumativa.","Avaliação sumativa"]]},"GINR":{"6":[["Apresentação da unidade didática e avaliação diagnóstica: manejo elementar de um aparelho (arco ou corda); critérios de apreciação.","Introdução / Avaliação diagnóstica"],["Exercitação da combinação de elementos técnicos do corpo com o manejo do aparelho (arco ou corda).","Exercitação / Consolidação"],["Exercitação do manejo elementar de um segundo aparelho (bola ou fita); transferência das destrezas do corpo já dominadas.","Exercitação / Consolidação"],["Exercitação da combinação de elementos técnicos do corpo com o manejo do segundo aparelho (bola ou fita). Aula de acerto do calendário.","Exercitação / Consolidação"],["Composição de um esquema individual ou de grupo, integrando os dois aparelhos abordados.","Exercitação / Consolidação"],["Apresentação e avaliação sumativa do esquema.","Avaliação sumativa"]]},"APF":{"12":[["Avaliação diagnóstica: bateria de testes FITescola — vaivém.","Introdução / Avaliação diagnóstica"],["Avaliação diagnóstica: bateria de testes FITescola — abdominais e extensões de braços.","Avaliação diagnóstica"],["Avaliação diagnóstica: bateria de testes FITescola — senta e alcança e impulsão horizontal.","Avaliação diagnóstica"],["Avaliação sumativa (1.º período): bateria FITescola — vaivém.","Avaliação sumativa (1.º P.)"],["Avaliação sumativa (1.º período): bateria FITescola — abdominais e extensões de braços.","Avaliação sumativa (1.º P.)"],["Avaliação sumativa (1.º período): bateria FITescola — senta e alcança e impulsão horizontal.","Avaliação sumativa (1.º P.)"],["Avaliação sumativa (2.º período): bateria FITescola — vaivém.","Avaliação sumativa (2.º P.)"],["Avaliação sumativa (2.º período): bateria FITescola — abdominais e extensões de braços.","Avaliação sumativa (2.º P.)"],["Avaliação sumativa (2.º período): bateria FITescola — senta e alcança e impulsão horizontal.","Avaliação sumativa (2.º P.)"],["Avaliação sumativa final (3.º período): bateria FITescola — vaivém.","Avaliação sumativa (3.º P.)"],["Avaliação sumativa final (3.º período): bateria FITescola — abdominais e extensões de braços.","Avaliação sumativa (3.º P.)"],["Avaliação sumativa final (3.º período): bateria FITescola — senta e alcança e impulsão horizontal; balanço da evolução na Zona Saudável de Aptidão Física ao longo do ano.","Avaliação sumativa (3.º P.)"]]},"CONH":{"5":[["Aptidão física e saúde — relação entre a prática de exercício físico e um estilo de vida saudável.","Introdução"],["Exercitação da dimensão sociocultural do desporto: valores olímpicos e paralímpicos.","Exercitação / Consolidação"],["Exercitação dos fatores associados a um estilo de vida saudável: alimentação, sono e atividade física.","Exercitação / Consolidação"],["Exercitação das capacidades motoras: conceitos e importância do seu desenvolvimento para a saúde.","Exercitação / Consolidação"],["Síntese dos conhecimentos abordados ao longo do ano.","Síntese / Consolidação"]]}},"aeTextDefault":{"BASQ":"Cooperar com os companheiros para o alcance do objetivo, no Basquetebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","GINS":"Compor, realizar e analisar da Ginástica de Solo, as destrezas elementares do solo, em esquemas individuais e/ou de grupo, aplicando os critérios de correção técnica, expressão e combinação, e apreciando os esquemas de acordo com esses critérios. (Nível Introdução)","ATLC":"No Atletismo, realizar e analisar corridas, cumprindo corretamente as exigências elementares, técnicas e do regulamento, não só como praticante, mas também como juiz. (Nível Introdução)","ATLS":"No Atletismo, realizar e analisar saltos, cumprindo corretamente as exigências elementares, técnicas e do regulamento, não só como praticante, mas também como juiz. (Nível Introdução)","ATLL":"No Atletismo, realizar e analisar o lançamento do peso, cumprindo corretamente as exigências elementares, técnicas e do regulamento, não só como praticante, mas também como juiz. (Nível Introdução)","ORI":"Realizar percursos de Orientação elementares, utilizando técnicas de orientação e respeitando as regras de organização, participação, e de preservação da qualidade do ambiente. (Nível Introdução)","FUT":"Cooperar com os companheiros para o alcance do objetivo, no Futebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","AND":"Cooperar com os companheiros para o alcance do objetivo, no Andebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","TM":"Realizar com oportunidade e correção as ações técnico-táticas elementares, no Ténis de Mesa, garantindo a iniciativa e ofensividade em participações «individuais» e «a pares», aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","BAD":"Realizar com oportunidade e correção as ações técnico-táticas elementares, no Badminton, garantindo a iniciativa e ofensividade em participações «individuais» e «a pares», aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","GINA":"Compor, realizar e analisar da Ginástica de Aparelhos, as destrezas elementares, em esquemas individuais e/ou de grupo, aplicando os critérios de correção técnica, expressão e combinação, e apreciando os esquemas de acordo com esses critérios. (Nível Introdução)","DAN":"Apreciar, compor e realizar, na Dança, sequências de elementos técnicos elementares, em coreografias individuais e ou em grupo, aplicando os critérios de expressividade, de acordo com os motivos das composições. (Nível Introdução)","VOL":"Cooperar com os companheiros para o alcance do objetivo, no Voleibol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Introdução)","GINR":"Compor, realizar e analisar da Ginástica Rítmica, as destrezas elementares, em esquemas individuais e/ou de grupo, aplicando os critérios de correção técnica, expressão e combinação, e apreciando os esquemas de acordo com esses critérios. (Nível Introdução)","APF":"Desenvolver capacidades motoras evidenciando aptidão muscular e aptidão aeróbia, enquadradas na Zona Saudável de Aptidão Física do programa FITescola, para a sua idade e sexo.","CONH":"Relacionar aptidão física e saúde e identificar os fatores associados a um estilo de vida saudável. Interpretar a dimensão sociocultural dos desportos na atualidade e ao longo dos tempos, nomeadamente os jogos olímpicos e paralímpicos."},"aeTextOverride":{},"aeTextOverrideGrade":{"BASQ|9":"Cooperar com os companheiros para o alcance do objetivo, no Basquetebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Elementar)","FUT|9":"Cooperar com os companheiros para o alcance do objetivo, no Futebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Elementar)","AND|9":"Cooperar com os companheiros para o alcance do objetivo, no Andebol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Elementar)","VOL|9":"Cooperar com os companheiros para o alcance do objetivo, no Voleibol, realizando com oportunidade e correção as ações técnico-táticas elementares em todas as funções, conforme a oposição em cada fase do jogo, aplicando as regras, não só como jogador, mas também como árbitro. (Nível Elementar)"},"jdcTopics":{"BASQ":{"7":[["Receção e passe (peito e picado), a pares, parados","Situação de exercício (avaliação diagnóstica)","Regras principais da modalidade (número de jogadores, formas de contagem de pontos e principais violações)"],["Passe e receção em deslocamento","Situação de 2x0","Faltas pessoais e reposições de bola em jogo (revisão)"],["Drible de progressão","Situação de 1x0 e 1x1","Regra dos 5 segundos com a bola na mão"],["Paragem a um tempo e lançamento em apoio (parado)","Situação de 1x0 (receção, paragem e lançamento)","Regra dos 3 segundos na zona restritiva"],["Paragem a um tempo e lançamento em apoio (consolidação), sem drible","Jogo condicionado 2x1, sem drible","Regra dos 3 segundos na zona restritiva (revisão)"],["Lançamento em apoio, com oposição parcial (passiva)","Situação de 2x1, criando superioridade numérica ofensiva","Regra da bola presa (alternância de posse)"],["Mudança de direção e de mão pela frente","Situação de 1x1, sob oposição","Regra dos passos (travelling)"],["Enquadramento defensivo individual (postura e deslocamento defensivo)","Situação de 1x1 organizado","Regra da falta pessoal (contacto ilegal)"],["Aplicação integrada do passe, drible, lançamento e defesa individual","Situação de 2x2","Regra da reposição de bola (lateral e fundo)"],["Aplicação integrada dos gestos técnicos abordados (consolidação)","Jogo condicionado 3x3, com regras simplificadas (sem defesa de zona) — aula de acerto do calendário","Consolidação das regras já trabalhadas"],["Aplicação integrada dos gestos técnicos abordados (receção, passe, drible, lançamento, defesa)","Jogo formal 3x3 (campo reduzido)","Aplicação integrada de todas as regras trabalhadas, alternando as funções de jogador e árbitro"],null],"8":[["Revisão da receção, do passe e do lançamento em apoio","Situação de 2x0 (avaliação diagnóstica)","Regras principais — faltas pessoais e reposições de bola em jogo (revisão e aprofundamento)"],["Passe em deslocamento, sob oposição parcial","Situação de 2x0 progredindo para 2x1","Regra do campo dividido (violação de recuo de bola)"],["Drible de progressão e mudança de direção/de mão","Situação de 1x1, com oposição","Regra do duplo drible"],["Paragens e rotação sobre um apoio (pivot)","Situação de 1x0, sob pressão passiva","Regra dos passos (travelling), com ênfase no pivot"],["Paragens e pivot (consolidação)","Jogo condicionado 2x1","Regra dos passos (travelling), revisão"],["Lançamento na passada (introdução)","Situação de 1x0, progredindo para 1x1","Regra da interferência na bola (goaltending)"],["Drible de progressão e mudança de direção, com finalização (em apoio ou na passada)","Situação de 1x1, ofensivo e defensivo","Regra da falta em ataque (carga ofensiva)"],["Passe, desmarcação e finalização","Situação de 2x1, criando superioridade numérica ofensiva","Regra da violação de posse (tempo de posse de bola)"],["Enquadramento defensivo, individual e coletivo","Situação de 2x2","Noções e prática de arbitragem"],["Aplicação integrada dos gestos técnicos abordados (consolidação)","Jogo condicionado 4x4, com regras simplificadas — aula de acerto do calendário","Consolidação das regras já trabalhadas"],["Aplicação integrada dos gestos técnicos abordados","Jogo formal 5x5","Aplicação das regras trabalhadas, alternando as funções de jogador e árbitro"],null],"9":[["Revisão dos conteúdos técnico-táticos do nível Introdução","Jogo reduzido (3x3) diagnóstico","Critérios de apreciação do nível Elementar"],["Drible de proteção da bola, sob oposição intensa","Situação de 1x1","Regra do campo dividido (8 segundos)"],["Lançamento na passada (consolidação)","Situação de 1x0 e 1x1, com oposição","Regra da interferência na bola (goaltending)"],["Drible de progressão, de proteção da bola e mudança de direção, com finalização variada (em apoio ou na passada)","Situação de 1x1, ofensivo e defensivo","Regra da falta em ataque"],["Drible de progressão e finalização variada (consolidação)","Jogo condicionado 2x1","Regra da falta em ataque (revisão)"],["Passe, desmarcação e finalização","Situação de 2x1, criando superioridade numérica ofensiva","Regra da reposição rápida (contra-ataque)"],["Cooperação ofensiva (passe e corte) e leitura da oposição defensiva","Situação de 2x2","Regra do duplo drible"],["Enquadramento defensivo coletivo — ajuda e recuperação","Situação de 2x2 defensivo","Noções e prática de arbitragem"],["Exploração da superioridade e da igualdade numérica, com finalização","Situações de 3x2 e 3x1","Regra da falta técnica (comportamento antidesportivo)"],["Consolidação dos gestos técnico-táticos do nível Elementar","Jogo condicionado 4x4, com regras simplificadas — aula de acerto do calendário","Consolidação das regras do nível Elementar"],["Consolidação dos gestos técnico-táticos do nível Elementar","Jogo formal 5x5","Aplicação das regras do nível Elementar, alternando as funções de jogador e árbitro"],null]},"FUT":{"7":[["Condução de bola e passe curto, parados","Situação de exercício / situação de 1x0 (condução até um alvo) — avaliação diagnóstica","Regras principais — fora de jogo (noção) e lançamento lateral"],["Passe e receção a curta e média distância, em deslocamento","Situação de 2x0","Regra do pontapé de canto e de baliza"],["Condução de bola e drible de proteção, sob oposição parcial","Situação de 1x1 (disputa e proteção da bola, sem finalização)","Regra da disputa leal de bola (carga regular)"],["Remate à baliza, parada e em movimento","Situação de 1x0 finalizador","Regra do fora de jogo em situação de finalização"],["Passe, receção e desmarcação, sob oposição parcial","Situação de 2x1, criando superioridade numérica ofensiva","Regra da marcação (homem a homem)"],["Aplicação integrada dos gestos técnicos abordados (condução, passe, receção, remate)","Jogo formal 4x4 (campo reduzido) — aula de acerto do calendário","Aplicação integrada das regras trabalhadas, alternando as funções de jogador e árbitro"],null],"8":[["Revisão da condução, do passe e da receção","Situação de 2x0 (avaliação diagnóstica)","Regras principais — fora de jogo e lançamento lateral (revisão)"],["Passe e receção em profundidade (para espaços livres), sob oposição parcial","Situação de 2x1","Regra do pontapé de canto e de baliza (revisão e aprofundamento)"],["Condução de bola e drible, sob oposição","Situação de 1x1, com finalização à baliza","Regra do livre direto e indireto"],["Remate à baliza em movimento, sob pressão","Situação de 1x0 finalizador","Regra do cartão amarelo"],["Enquadramento defensivo (marcação e desarme)","Situação de 3x2 (exploração da superioridade numérica)","Regra do fora de jogo em superioridade numérica"],["Aplicação integrada dos gestos técnicos abordados","Jogo formal — aula de acerto do calendário","Revisão integrada das regras principais, alternando as funções de jogador e árbitro"],null],"9":[["Revisão dos conteúdos técnico-táticos do nível Introdução (condução, passe, receção, remate)","Jogo reduzido (3x3) diagnóstico","Revisão geral das regras (fora de jogo, faltas, cartões)"],["Passe, receção e desmarcação em apoio e em profundidade, sob pressão","Situações de 2x1 e 2x2","Regra do fora de jogo em profundidade"],["Condução, drible e finta, sob pressão intensa","Situação de 1x1, com finalização rápida","Regra da disputa de bola e do cartão amarelo"],["Remate em contexto de jogo (após construção coletiva)","Situação de 3x2, com enquadramento defensivo coletivo","Regra do penálti (grande penalidade)"],["Remate em contexto de jogo e enquadramento defensivo coletivo (consolidação)","Jogo condicionado 4x4, com regras simplificadas — aula de acerto do calendário","Revisão das regras já trabalhadas"],["Aplicação integrada dos gestos técnico-táticos abordados","Jogo formal","Regra das substituições e da arbitragem"],null]},"AND":{"7":[["Receção, passe e drible, parados","Situação de exercício / situação de 1x0 (avaliação diagnóstica)","Regras principais — passos, dribles e área de baliza"],["Drible de progressão em linha reta e passe a curta distância","Situação de 2x0","Regra dos 3 passos com a bola na mão"],["Remate em apoio (parado)","Situação de 1x0 finalizador","Regra da área de baliza (semicírculo dos 6 metros)"],["Drible e finta, com oposição parcial (passiva)","Situação de 1x1, com finalização (remate em apoio)","Regra do contacto (carga) em defesa"],["Passe e receção em deslocamento, sob oposição parcial","Situação de 2x1, criando superioridade numérica ofensiva","Regra da reposição de bola (lateral e de baliza)"],["Aplicação integrada dos gestos técnicos abordados (receção, passe, drible, remate)","Jogo formal 4x4 (campo reduzido) — aula de acerto do calendário","Aplicação integrada das regras trabalhadas, alternando as funções de jogador e árbitro"],null],"8":[["Revisão da receção, do passe e do drible","Situação de 2x0 (avaliação diagnóstica)","Regras principais — passos, dribles e área de baliza (revisão)"],["Passe e receção em deslocamento, sob oposição","Situação de 2x1, criando superioridade numérica ofensiva","Regra da área de baliza (violação por invasão)"],["Drible de progressão e finta","Situação de 1x1, com finalização (remate em apoio ou em suspensão)","Regra do contacto (carga) em 1x1"],["Remate em apoio e em suspensão","Situação de 1x0, sob pressão","Regra da exclusão de 2 minutos"],["Enquadramento defensivo, individual e coletivo","Situação de 3x2, explorando a superioridade e a igualdade numérica","Regra dos 3 segundos com a bola imóvel"],["Aplicação integrada dos gestos técnicos abordados","Jogo formal — aula de acerto do calendário","Revisão integrada das regras principais, alternando as funções de jogador e árbitro"],null],"9":[["Revisão dos conteúdos técnico-táticos do nível Introdução (receção, passe, drible, remate)","Jogo reduzido (4x4) diagnóstico","Revisão geral das regras (passos, dribles, faltas)"],["Passe e receção em deslocamento, sob pressão","Situações de 2x1 e 2x2","Regra da área de baliza (violação por invasão)"],["Drible de progressão e finta, sob pressão intensa","Situação de 1x1, com finalização rápida","Regra da falta e da exclusão (2 minutos)"],["Remate em apoio e em suspensão, em contexto de jogo","Situação de 3x2, com enquadramento defensivo coletivo","Regra dos 7 metros (grande penalidade)"],["Remate em apoio/suspensão e enquadramento defensivo coletivo (consolidação)","Jogo condicionado 4x4, com regras simplificadas — aula de acerto do calendário","Revisão das regras já trabalhadas"],["Aplicação integrada dos gestos técnico-táticos abordados","Jogo formal","Regra dos passos e da dupla-posse (revisão)"],null]},"VOL":{"7":[["Passe de dedos e manchete, a pares, parados","Situação de exercício / situação de 1x0 (autopasse) — avaliação diagnóstica","Regras principais — rotação, toques por equipa e faltas"],["Passe de dedos, parado","Situação de 1x0 (autopasse) e 1x1 sobre a rede","Regra dos dois toques consecutivos (double contact)"],["Passe de dedos, em deslocamento curto","Situação de 1x1 sobre a rede","Regra da invasão de campo sob a rede"],["Manchete, parado","Situação de 1x1 sobre a rede","Regra do toque de rede"],["Manchete, em deslocamento curto","Situação de 1x1 sobre a rede","Regra da bola fora (linhas delimitadoras)"],["Serviço por baixo","Situação de 1x0 (serviço colocado para zona)","Regra da ordem de rotação no serviço"],["Receção de serviço (por baixo)","Situação de 1x1 sobre a rede","Regra dos quatro toques (four hits)"],["Construção simples do 1.º/2.º toque e remate simples (com passe alto)","Situação de 1x1 sobre a rede","Regra do toque retido (carrying)"],["Aplicação integrada dos gestos técnicos abordados (passe de dedos, manchete, serviço, remate)","Jogo formal 4x4 (campo reduzido) — aula de acerto do calendário","Aplicação integrada das regras trabalhadas, alternando as funções de jogador e árbitro"],null],"8":[["Revisão do passe de dedos, da manchete e do serviço por baixo","Situação de 1x1 sobre a rede (avaliação diagnóstica)","Regras principais (revisão)"],["Passe de dedos, com maior exigência de precisão e de deslocamento","Situação de 2x2","Regra da rotação (posição incorreta)"],["Manchete, com maior exigência de precisão e de deslocamento","Situação de 2x2","Regra dos três toques por equipa"],["Serviço por baixo e por cima","Situação de 1x0 (serviço colocado)","Regra da ordem de serviço (revisão e aprofundamento)"],["Receção de serviço e construção do 1.º/2.º toque","Situação de 2x2","Regra do toque simultâneo a dois (double hit)"],["Remate simples","Situação de 1x1 sobre a rede, controlando o toque e finalizando o ataque","Regra da invasão sob a rede"],["Enquadramento ofensivo e defensivo (rotação e cobertura)","Situação de 2x2","Regra do bloco (contacto no bloco não conta como toque de equipa)"],["Aplicação dos gestos técnico-táticos abordados","Jogo reduzido (3x3)","Aplicação das regras trabalhadas"],["Aplicação integrada dos gestos técnicos abordados","Jogo formal — aula de acerto do calendário","Revisão integrada das regras principais, alternando as funções de jogador e árbitro"],null],"9":[["Revisão do passe de dedos, da manchete e do serviço (nível Introdução)","Situação de 2x2 diagnóstico","Critérios de apreciação do nível Elementar"],["Passe de dedos e manchete, com maior exigência de precisão e de deslocamento","Situação de 2x2","Regra da rotação (revisão)"],["Serviço por cima (tipo ténis) e receção organizada em formação (ex.: em W)","Situação de 3x3","Regra da ordem de serviço e da rotação"],["Construção do 2.º e 3.º toque com qualidade, orientando o ataque para diferentes zonas da rede","Situação de 3x3","Regra dos três toques por equipa"],["Remate em apoio e em suspensão","Situação de 1x1 sobre a rede, sob pressão ofensiva","Regra da invasão sob a rede"],["Bloco individual","Situação de 2x1, explorando a superioridade ofensiva sobre o bloco","Regra do bloco (toque no bloco não conta para os três toques)"],["Sistema de rotação com posições específicas (distribuidor, atacantes, líbero funcional)","Situação de 3x2","Regra do líbero (restrições de ação)"],["Transição defesa-ataque — cobertura do remate e contra-ataque","Situação de 3x3","Regra do toque simultâneo a dois (double hit)"],["Aplicação dos sistemas de receção e de rotação abordados","Jogo reduzido (4x4)","Aplicação das regras trabalhadas"],["Aplicação integrada dos gestos técnico-táticos abordados","Jogo formal 6x6","Revisão integrada das regras principais, alternando as funções de jogador e árbitro"],["Consolidação dos gestos técnico-táticos do nível Elementar","Jogo formal 6x6 — aula de acerto do calendário","Aplicação das regras do nível Elementar, alternando as funções de jogador e árbitro"],null]}}}</script>
+<script id="dados-calendario-default" type="application/json">{
+  "periodos": [
+    {
+      "nome": "1.º Período",
+      "pk": "P1",
+      "inicio": "2026-09-14",
+      "fim": "2026-12-15",
+      "nweeks": 15
+    },
+    {
+      "nome": "2.º Período",
+      "pk": "P2",
+      "inicio": "2027-01-04",
+      "fim": "2027-03-19",
+      "nweeks": 12
+    },
+    {
+      "nome": "3.º Período",
+      "pk": "P3",
+      "inicio": "2027-04-05",
+      "fim": "2027-06-11",
+      "nweeks": 11
+    }
+  ],
+  "exclusoes": [
+    {
+      "data": "2026-10-05",
+      "motivo": "Implantação da República"
+    },
+    {
+      "data": "2026-12-01",
+      "motivo": "Restauração da Independência"
+    },
+    {
+      "data": "2026-12-08",
+      "motivo": "Imaculada Conceição"
+    },
+    {
+      "data": "2026-12-16",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-17",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-18",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-21",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-22",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-23",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-24",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-25",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-28",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-29",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-30",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2026-12-31",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2027-01-01",
+      "motivo": "Férias de Natal"
+    },
+    {
+      "data": "2027-02-08",
+      "motivo": "Interrupção de Carnaval"
+    },
+    {
+      "data": "2027-02-09",
+      "motivo": "Interrupção de Carnaval"
+    },
+    {
+      "data": "2027-02-10",
+      "motivo": "Interrupção de Carnaval"
+    },
+    {
+      "data": "2027-03-22",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-23",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-24",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-25",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-26",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-29",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-30",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-03-31",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-04-01",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-04-02",
+      "motivo": "Férias da Páscoa"
+    },
+    {
+      "data": "2027-05-27",
+      "motivo": "Dia da Cidade de Viseu / ponte"
+    },
+    {
+      "data": "2027-06-10",
+      "motivo": "Dia de Portugal"
+    }
+  ]
+}</script>
+
+<script>
+// -*- coding: utf-8 -*-
+// Motor de cálculo do Roteiro EF, portado 1:1 de Python (data_lib.py,
+// rules_espaco.py, scheduling.py, export_data.py) para JavaScript puro —
+// corre inteiramente no browser, sem qualquer chamada a IA ou a um servidor.
+// Funciona em Node (para testes) e no browser (anexa-se a `window.RoteiroEngine`
+// quando não há `module`).
+(function (root, factory) {
+  var mod = factory();
+  if (typeof module === 'object' && module.exports) {
+    module.exports = mod;
+  } else {
+    root.RoteiroEngine = mod;
+  }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var DIAS_SEMANA = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+  // ---------- datas ----------
+  function parseISO(s) {
+    var p = s.split('-').map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  }
+  function toISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function addDays(d, n) {
+    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    r.setDate(r.getDate() + n);
+    return r;
+  }
+  function isoWeekdayIdx(d) {
+    // Segunda=0 ... Domingo=6 (equivalente a date.weekday() do Python)
+    return (d.getDay() + 6) % 7;
+  }
+  function banda(date) {
+    var first = new Date(date.getFullYear(), date.getMonth(), 1);
+    var wd1 = ((first.getDay() + 6) % 7) + 1; // isoweekday: Seg=1..Dom=7
+    return Math.floor((date.getDate() + wd1 - 2) / 7) + 1;
+  }
+  function daterange(d1, d2) {
+    var out = [];
+    var d = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate());
+    while (d <= d2) {
+      out.push(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+      d.setDate(d.getDate() + 1);
+    }
+    return out;
+  }
+
+  function codigo(prefixo, grade, n) {
+    return prefixo + grade + '-' + String(n).padStart(2, '0');
+  }
+
+  // ---------- data_lib: sequência de conteúdos por ano/período ----------
+  function buildGradePeriodSeq(grade, dados) {
+    var apfCursor = 0, conhCursor = 0;
+    var out = {};
+    var lessonDetalhado = {};
+    var lessonTopics = {};
+    dados.periodoKeys.forEach(function (pk) {
+      var rows = [];
+      dados.gradePeriodos[grade][pk].forEach(function (pair) {
+        var prefixo = pair[0], n = pair[1];
+        var items, startNum, isJdc;
+        if (prefixo === 'APF') {
+          items = dados.lessonContent['APF']['12'].slice(apfCursor, apfCursor + n);
+          startNum = apfCursor + 1;
+          apfCursor += n;
+          isJdc = false;
+        } else if (prefixo === 'CONH') {
+          items = dados.lessonContent['CONH']['5'].slice(conhCursor, conhCursor + n);
+          startNum = conhCursor + 1;
+          conhCursor += n;
+          isJdc = false;
+        } else if (dados.jdcGradeKeyed.indexOf(prefixo) !== -1) {
+          items = dados.lessonContent[prefixo][grade];
+          startNum = 1;
+          isJdc = true;
+        } else if (dados.gradeKeyedPlain.indexOf(prefixo) !== -1) {
+          items = dados.lessonContent[prefixo][grade];
+          startNum = 1;
+          isJdc = false;
+        } else {
+          items = dados.lessonContent[prefixo][String(n)];
+          startNum = 1;
+          isJdc = false;
+        }
+        items.forEach(function (item, idx) {
+          var i = startNum + idx;
+          var cod = codigo(prefixo, grade, i);
+          if (isJdc) {
+            var detalhado = item[0], sumario = item[1], funcao = item[2];
+            lessonDetalhado[cod] = detalhado;
+            var topicsGrade = dados.jdcTopics[prefixo] && dados.jdcTopics[prefixo][grade];
+            lessonTopics[cod] = (topicsGrade && topicsGrade[i - 1]) || null;
+            rows.push({ codigo: cod, conteudo: sumario, funcao: funcao, prefixo: prefixo, n: n });
+          } else {
+            rows.push({ codigo: cod, conteudo: item[0], funcao: item[1], prefixo: prefixo, n: n });
+          }
+        });
+      });
+      out[pk] = rows;
+    });
+    return { seq: out, lessonDetalhado: lessonDetalhado, lessonTopics: lessonTopics };
+  }
+
+  function aeText(prefixo, nAulas, grade, dados) {
+    var keyG = prefixo + '|' + grade;
+    if (Object.prototype.hasOwnProperty.call(dados.aeTextOverrideGrade, keyG)) return dados.aeTextOverrideGrade[keyG];
+    var keyN = prefixo + '|' + nAulas;
+    if (Object.prototype.hasOwnProperty.call(dados.aeTextOverride, keyN)) return dados.aeTextOverride[keyN];
+    return dados.aeTextDefault[prefixo];
+  }
+
+  // ---------- rules_espaco: compatibilidade modalidade x espaço ----------
+  function buildRules(rowsTabela, espacos) {
+    var rules = {};
+    rowsTabela.forEach(function (row) {
+      var cod = row[0], conteudo = row[1], pode = row[2], nao = row[3];
+      var podeDict = {};
+      for (var j = 0; j < 3; j++) { if (pode[j] !== null && pode[j] !== undefined) podeDict[espacos[j]] = pode[j]; }
+      var naoSet = {};
+      for (var j = 0; j < 3; j++) { if (nao[j] === 'X') naoSet[espacos[j]] = true; }
+      if (!rules[cod]) rules[cod] = [];
+      rules[cod].push([conteudo, podeDict, naoSet]);
+    });
+    return rules;
+  }
+
+  // ---------- scheduling: intercalação com o mínimo de conflitos ----------
+  function streamsPeriodo(blocks, rules, espacos) {
+    var streams = [];
+    blocks.forEach(function (pair) {
+      var prefixo = pair[0], n = pair[1];
+      var fases = [];
+      if (prefixo === 'ATLS') {
+        var nComp = Math.floor(n / 2);
+        var nAlt = n - nComp;
+        var variants = {};
+        rules['ATLS'].forEach(function (v) { variants[v[0]] = v; });
+        var naoComp = variants['Salto em Comprimento'][2];
+        var naoAlt = variants['Salto em Altura'][2];
+        var compatComp = espacos.filter(function (e) { return !naoComp[e]; });
+        var compatAlt = espacos.filter(function (e) { return !naoAlt[e]; });
+        for (var k = 0; k < nComp; k++) fases.push(['Salto em Comprimento', compatComp]);
+        for (var k2 = 0; k2 < nAlt; k2++) fases.push(['Salto em Altura', compatAlt]);
+      } else {
+        var variants2 = rules[prefixo];
+        var compat;
+        if (!variants2) { compat = espacos.slice(); }
+        else {
+          var nao = variants2[0][2];
+          compat = espacos.filter(function (e) { return !nao[e]; });
+        }
+        for (var k3 = 0; k3 < n; k3++) fases.push([null, compat]);
+      }
+      streams.push({ prefixo: prefixo, fases: fases, pos: 0 });
+    });
+    return streams;
+  }
+
+  function agendaIntercalada(blocks, slots, rules, espacos) {
+    var espacosSeq = slots.map(function (s) { return s[1]; });
+    var streams = streamsPeriodo(blocks, rules, espacos);
+    var byPrefixo = {};
+    streams.forEach(function (s) { byPrefixo[s.prefixo] = s; });
+    var totalDemanda = streams.reduce(function (acc, s) { return acc + s.fases.length; }, 0);
+    var nComData = Math.min(espacosSeq.length, totalDemanda);
+
+    var resultado = [];
+    var conflitos = 0;
+    var i = 0;
+
+    function folga(s, slotIdx) {
+      var faseCompat = s.fases[s.pos][1];
+      var futurosCompat = 0;
+      for (var k = slotIdx; k < nComData; k++) { if (faseCompat.indexOf(espacosSeq[k]) !== -1) futurosCompat++; }
+      var restantesTotal = s.fases.length - s.pos;
+      return futurosCompat - restantesTotal;
+    }
+    function ativo(prefixo) {
+      var s = byPrefixo[prefixo];
+      return !!s && s.pos < s.fases.length;
+    }
+    function seguroEmparelhar(slotIdx) {
+      var gins = byPrefixo['GINS'];
+      if (!gins) return true;
+      var restantesDepois = gins.fases.length - gins.pos - 1;
+      var futurosGinasio = 0;
+      for (var k = slotIdx + 2; k < nComData; k++) { if (espacosSeq[k] === 'Ginásio') futurosGinasio++; }
+      return futurosGinasio >= restantesDepois;
+    }
+
+    while (i < nComData) {
+      var parDuplo = (i + 1 < nComData && slots[i][0].getTime() === slots[i + 1][0].getTime() &&
+        espacosSeq[i] === 'Ginásio' && espacosSeq[i + 1] === 'Ginásio');
+      if (parDuplo && ativo('GINS') && ativo('TM') && seguroEmparelhar(i)) {
+        [['GINS', i], ['TM', i + 1]].forEach(function (pair) {
+          var prefixo = pair[0], slotIdx = pair[1];
+          var s = byPrefixo[prefixo];
+          var subfase = s.fases[s.pos][0];
+          resultado.push({ slotIdx: slotIdx, prefixo: prefixo, subfase: subfase, conflito: false });
+          s.pos++;
+        });
+        i += 2;
+        continue;
+      }
+
+      var espaco = espacosSeq[i];
+      var ativos = streams.filter(function (s) { return s.pos < s.fases.length; });
+      var compativeis = ativos.filter(function (s) { return s.fases[s.pos][1].indexOf(espaco) !== -1; });
+
+      var escolhido, conflito;
+      if (compativeis.length) {
+        escolhido = compativeis.reduce(function (best, s) { return folga(s, i) < folga(best, i) ? s : best; });
+        conflito = false;
+      } else {
+        escolhido = ativos.reduce(function (best, s) { return folga(s, i) < folga(best, i) ? s : best; });
+        conflito = true;
+      }
+
+      var subfase2 = escolhido.fases[escolhido.pos][0];
+      resultado.push({ slotIdx: i, prefixo: escolhido.prefixo, subfase: subfase2, conflito: conflito });
+      escolhido.pos++;
+      if (conflito) conflitos++;
+      i++;
+    }
+
+    resultado.sort(function (a, b) { return a.slotIdx - b.slotIdx; });
+    return { resultado: resultado, conflitos: conflitos, nComData: nComData, streams: streams };
+  }
+
+  // ---------- export_data: calendário real por turma ----------
+  function jdcFullText(cod, lessonTopics, lessonDetalhado) {
+    var topics = lessonTopics[cod];
+    if (!topics) return lessonDetalhado[cod];
+    return topics[0] + ' — ' + topics[1] + ' — ' + topics[2];
+  }
+
+  function computeTurma(turmaTuple, dados, periodosAno, exclusoesSet) {
+    var turmaCode = turmaTuple[0], dd = turmaTuple[1], ds = turmaTuple[2],
+      espd1 = turmaTuple[3], espd2 = turmaTuple[4], esps = turmaTuple[5];
+    var grade = turmaCode[0];
+    var dias, espByOcc;
+    if (ds < dd) {
+      dias = [ds, dd, dd];
+      espByOcc = [esps, espd1, espd2];
+    } else {
+      dias = [dd, dd, ds];
+      espByOcc = [espd1, espd2, esps];
+    }
+
+    var rules = buildRules(dados.rowsTabela, dados.espacos);
+    var seqInfo = buildGradePeriodSeq(grade, dados);
+    var seq = seqInfo.seq, lessonDetalhado = seqInfo.lessonDetalhado, lessonTopics = seqInfo.lessonTopics;
+
+    var out = {};
+    periodosAno.forEach(function (p) {
+      var inicio = parseISO(p.inicio), fim = parseISO(p.fim), nweeks = p.nweeks, pk = p.pk;
+      var weeks = [];
+      var weekAnchor = inicio;
+      for (var w = 0; w < nweeks; w++) {
+        var occDates = [];
+        for (var occIdx = 0; occIdx < 3; occIdx++) {
+          var date = addDays(weekAnchor, dias[occIdx] - 1);
+          occDates.push([date, date <= fim && !exclusoesSet.has(toISO(date))]);
+        }
+        weeks.push(occDates);
+        weekAnchor = addDays(weekAnchor, 7);
+      }
+
+      var slotsOcc = [];
+      weeks.forEach(function (occDates, w) {
+        for (var occIdx = 0; occIdx < 3; occIdx++) {
+          if (occDates[occIdx][1]) slotsOcc.push([occDates[occIdx][0], occIdx, w]);
+        }
+      });
+
+      var slots = slotsOcc.map(function (t) {
+        var date = t[0], occIdx = t[1];
+        return [date, espByOcc[occIdx][banda(date) - 1]];
+      });
+      var semanas = slotsOcc.map(function (t) { return t[2]; });
+      var ocorrencias = slotsOcc.map(function (t) { return t[1]; });
+
+      var blocks = dados.gradePeriodos[grade][pk];
+
+      var byPrefixo = {};
+      seq[pk].forEach(function (row) {
+        if (!byPrefixo[row.prefixo]) byPrefixo[row.prefixo] = [];
+        byPrefixo[row.prefixo].push(row);
+      });
+
+      var agenda = agendaIntercalada(blocks, slots, rules, dados.espacos);
+      var resultado = agenda.resultado, streams = agenda.streams;
+
+      var contador = {};
+      var rows = [];
+      resultado.forEach(function (r) {
+        var idx = contador[r.prefixo] || 0;
+        contador[r.prefixo] = idx + 1;
+        var row = byPrefixo[r.prefixo][idx];
+        var cod = row.codigo, cont = row.conteudo, func = row.funcao;
+        var date = slots[r.slotIdx][0], espaco = slots[r.slotIdx][1];
+        var isJdc = dados.jdcGradeKeyed.indexOf(r.prefixo) !== -1;
+        var detalhado = isJdc ? jdcFullText(cod, lessonTopics, lessonDetalhado) : cont;
+        rows.push({
+          aula: r.slotIdx + 1,
+          data: toISO(date),
+          dia_semana: DIAS_SEMANA[isoWeekdayIdx(date)],
+          espaco: espaco,
+          codigo: cod,
+          modalidade: dados.sheetName[r.prefixo] || r.prefixo,
+          sumario: cont,
+          detalhado: detalhado,
+          funcao: func,
+          semana: semanas[r.slotIdx],
+          ocorrencia: ocorrencias[r.slotIdx],
+        });
+      });
+
+      var semData = [];
+      streams.forEach(function (s) {
+        var list = byPrefixo[s.prefixo] || [];
+        for (var k = s.pos; k < list.length; k++) {
+          semData.push({ codigo: list[k].codigo, modalidade: dados.sheetName[s.prefixo] || s.prefixo, sumario: list[k].conteudo });
+        }
+      });
+
+      out[pk] = { nome: p.nome, aulas: rows, sem_data: semData };
+    });
+    return out;
+  }
+
+  function buildPlanificacao(dados, periodosAno, exclusoes) {
+    var exclusoesSet = new Set(exclusoes.map(function (e) { return e.data; }));
+    var turmas = {};
+    dados.turmasAll.forEach(function (t) {
+      turmas[t[0]] = computeTurma(t, dados, periodosAno, exclusoesSet);
+    });
+    return { turmas: turmas, exclusoes: exclusoes };
+  }
+
+  return {
+    parseISO: parseISO, toISO: toISO, addDays: addDays, daterange: daterange, banda: banda,
+    codigo: codigo, buildGradePeriodSeq: buildGradePeriodSeq, aeText: aeText, buildRules: buildRules,
+    streamsPeriodo: streamsPeriodo, agendaIntercalada: agendaIntercalada, computeTurma: computeTurma,
+    buildPlanificacao: buildPlanificacao, DIAS_SEMANA: DIAS_SEMANA,
+  };
+});
+
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  var MESES = ["jan.","fev.","mar.","abr.","mai.","jun.","jul.","ago.","set.","out.","nov.","dez."];
+  var DIAS_LABEL = {1:"Segunda",2:"Terça",3:"Quarta",4:"Quinta",5:"Sexta",6:"Sábado",7:"Domingo"};
+  var PERIODO_LABEL = {P1:"1.º Período", P2:"2.º Período", P3:"3.º Período"};
+
+  function esc(s){
+    if(s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function todayISO(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  var TODAY = todayISO();
+  function el(html){
+    var t = document.createElement('template');
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild;
+  }
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  // ================================================================
+  // STORE — dados brutos (motor + calendário), persistidos sem servidor
+  // ================================================================
+  var LS_STORE = 'roteiro-ef-store-v1';
+  var LS_STATE = 'roteiro-ef-state-v1';
+  var LS_ESTADO = 'roteiro-ef-estado-v1';
+
+  var DEFAULT_MOTOR = JSON.parse(document.getElementById('dados-motor-default').textContent);
+  var DEFAULT_CALENDARIO = JSON.parse(document.getElementById('dados-calendario-default').textContent);
+
+  var STORE = null;   // { motor, calendario }
+  var PLANIF = null;  // resultado de RoteiroEngine.buildPlanificacao
+  var saveTimer = null;
+
+  function defaultStore(){
+    return { motor: JSON.parse(JSON.stringify(DEFAULT_MOTOR)), calendario: JSON.parse(JSON.stringify(DEFAULT_CALENDARIO)) };
+  }
+
+  function loadStore(){
+    try{
+      var raw = localStorage.getItem(LS_STORE);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && parsed.motor && parsed.calendario) return parsed;
+      }
+    }catch(e){}
+    return defaultStore();
+  }
+
+  function saveStoreNow(){
+    try{ localStorage.setItem(LS_STORE, JSON.stringify(STORE)); }catch(e){
+      showToast('Não foi possível guardar as alterações neste browser (armazenamento indisponível).');
+      return;
+    }
+    var ind = document.getElementById('save-indicator');
+    if(ind){
+      ind.textContent = '✓ Guardado ' + new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+    }
+  }
+  function saveStoreDebounced(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveStoreNow, 250);
+  }
+
+  function recompute(){
+    try{
+      PLANIF = RoteiroEngine.buildPlanificacao(STORE.motor, STORE.calendario.periodos, STORE.calendario.exclusoes);
+      return true;
+    }catch(err){
+      console.error(err);
+      showToast('Erro ao recalcular a planificação — verifique os dados em Configuração.');
+      return false;
+    }
+  }
+
+  // ---------- exportar / importar / repor ----------
+  function exportarJSON(){
+    var blob = new Blob([JSON.stringify(STORE, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var stamp = todayISO();
+    a.href = url; a.download = 'roteiro-ef-dados-' + stamp + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    showToast('Ficheiro de dados exportado.');
+  }
+
+  function importarJSON(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try{ parsed = JSON.parse(reader.result); }
+      catch(e){ showToast('Ficheiro inválido — não é um JSON válido.'); return; }
+      if(!parsed || !parsed.motor || !parsed.calendario){
+        showToast('Ficheiro inválido — não tem a estrutura esperada (motor + calendario).');
+        return;
+      }
+      STORE = parsed;
+      saveStoreNow();
+      if(!recompute()) return;
+      showToast('Dados importados com sucesso.');
+      initApp(true);
+    };
+    reader.onerror = function(){ showToast('Não foi possível ler o ficheiro.'); };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function reporExemplo(){
+    if(!window.confirm('Repor os dados de exemplo 2026/2027? Todas as alterações feitas em Configuração (turmas, calendário e sequência de conteúdos) serão substituídas. O registo de aulas dadas/não dadas mantém-se.')) return;
+    STORE = defaultStore();
+    saveStoreNow();
+    recompute();
+    showToast('Dados repostos para o exemplo 2026/2027.');
+    initApp(true);
+  }
+
+  // ================================================================
+  // Estado das aulas (dada / não dada) — guardado em localStorage
+  // ================================================================
+  var ESTADO_ALL = {}; // "TURMA_PK" -> { codigo: "dada"|"nao_dada" }
+  function loadEstadoAll(){
+    try{
+      var raw = localStorage.getItem(LS_ESTADO);
+      ESTADO_ALL = raw ? (JSON.parse(raw) || {}) : {};
+    }catch(e){ ESTADO_ALL = {}; }
+  }
+  function saveEstadoAll(){
+    try{ localStorage.setItem(LS_ESTADO, JSON.stringify(ESTADO_ALL)); }catch(e){}
+  }
+  function getEstadoPeriodo(turma, pk){
+    return ESTADO_ALL[turma + '_' + pk] || {};
+  }
+  function isAcerto(a){
+    return /aula de acerto do calend/i.test(a.sumario || '');
+  }
+
+  // ================================================================
+  // VISTA: ROTEIRO
+  // ================================================================
+  var rstate = { turma: null, periodo: 'P1' };
+
+  function loadRState(){
+    try{
+      var saved = JSON.parse(localStorage.getItem(LS_STATE) || 'null');
+      if(saved) return saved;
+    }catch(e){}
+    return null;
+  }
+  function saveRState(){
+    try{ localStorage.setItem(LS_STATE, JSON.stringify(rstate)); }catch(e){}
+  }
+
+  function turmasOrdenadas(){
+    return Object.keys(PLANIF.turmas).sort();
+  }
+
+  function periodoDeHoje(turmaCode){
+    var t = PLANIF.turmas[turmaCode];
+    if(!t) return 'P1';
+    for(var i=0;i<3;i++){
+      var pk = ['P1','P2','P3'][i];
+      var aulas = t[pk].aulas;
+      if(!aulas.length) continue;
+      var first = aulas[0].data, last = aulas[aulas.length-1].data;
+      if(TODAY >= first && TODAY <= last) return pk;
+    }
+    for(var j=0;j<3;j++){
+      var pk2 = ['P1','P2','P3'][j];
+      var aulas2 = t[pk2].aulas;
+      if(aulas2.length && TODAY < aulas2[0].data) return pk2;
+    }
+    return 'P3';
+  }
+
+  function fmtDia(iso){ return new Date(iso+'T00:00:00'); }
+  function fmtCurto(iso){ var d = fmtDia(iso); return d.getDate() + ' ' + MESES[d.getMonth()]; }
+  function fmtDataPT(iso){
+    var d = fmtDia(iso);
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  }
+
+  function copyText(text, btn){
+    function ok(){
+      showToast('Sumário copiado ✓');
+      if(btn){
+        var old = btn.innerHTML;
+        btn.classList.add('copied'); btn.innerHTML = '✓ Copiado';
+        setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = old; }, 1300);
+      }
+    }
+    function fail(){
+      try{
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var success = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if(success){ ok(); return; }
+      }catch(e){}
+      showToast('Não copiou automaticamente — seleciona e copia o texto.');
+    }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(ok).catch(fail);
+      } else { fail(); }
+    }catch(e){ fail(); }
+  }
+
+  function computePendencias(aulas, estado){
+    if(!aulas.length) return { totalPendente: 0, pendentesPorMateria: [] };
+    var blocos = [];
+    aulas.forEach(function(a){
+      var st = estado[a.codigo];
+      var last = blocos[blocos.length-1];
+      if(last && last.modalidade === a.modalidade){
+        last.count++;
+        if(isAcerto(a)) last.nAcerto++;
+        if(st === 'dada') last.nDada++;
+        else if(st === 'nao_dada') last.nNaoDada++;
+      } else {
+        blocos.push({
+          modalidade:a.modalidade, count:1,
+          nAcerto: isAcerto(a) ? 1 : 0,
+          nDada: st === 'dada' ? 1 : 0,
+          nNaoDada: st === 'nao_dada' ? 1 : 0
+        });
+      }
+    });
+    var totalPendente = 0;
+    var pendentesPorMateria = [];
+    blocos.forEach(function(b){
+      var pendente = Math.max(0, b.nNaoDada - b.nAcerto);
+      if(pendente > 0){
+        totalPendente += pendente;
+        pendentesPorMateria.push(b.modalidade + ' (' + pendente + ')');
+      }
+    });
+    return { totalPendente: totalPendente, pendentesPorMateria: pendentesPorMateria };
+  }
+
+  function resumoLecionadas(aulas){
+    var porMod = {}; var ordem = []; var total = 0;
+    aulas.forEach(function(a){
+      if(a.data >= TODAY) return;
+      if(!(a.modalidade in porMod)){ porMod[a.modalidade] = 0; ordem.push(a.modalidade); }
+      porMod[a.modalidade]++; total++;
+    });
+    return { total: total, itens: ordem.map(function(m){ return m + ' (' + porMod[m] + ')'; }) };
+  }
+
+  function renderResumo(aulas){
+    var resumoEl = document.getElementById('resumo');
+    resumoEl.innerHTML = '';
+    if(!aulas.length) return;
+    var dadasPorMod = {}; var ordemMod = [];
+    aulas.forEach(function(a){
+      if(a.data >= TODAY) return;
+      if(!(a.modalidade in dadasPorMod)){ dadasPorMod[a.modalidade] = 0; ordemMod.push(a.modalidade); }
+      dadasPorMod[a.modalidade]++;
+    });
+    var linhaDadas = document.createElement('div');
+    linhaDadas.className = 'dadas-linha';
+    if(ordemMod.length){
+      var htmlChips = '<span class="dadas-label">Já dadas:</span>';
+      ordemMod.forEach(function(mod){ htmlChips += '<span class="chip-dada">'+esc(dadasPorMod[mod])+' '+esc(mod)+'</span>'; });
+      linhaDadas.innerHTML = htmlChips;
+    } else {
+      linhaDadas.innerHTML = '<span class="dadas-vazio">Ainda nenhuma aula dada neste período.</span>';
+    }
+    resumoEl.appendChild(linhaDadas);
+
+    var porSemana = {}; var semanasOrdem = [];
+    aulas.forEach(function(a){
+      if(!(a.semana in porSemana)){ porSemana[a.semana] = []; semanasOrdem.push(a.semana); }
+      porSemana[a.semana].push(a);
+    });
+    semanasOrdem.sort(function(x,y){ return x - y; });
+    var linhasComPendente = semanasOrdem.filter(function(sem){
+      return porSemana[sem].some(function(a){ return a.data >= TODAY; });
+    });
+    if(!linhasComPendente.length) return;
+
+    var legenda = document.createElement('div');
+    legenda.className = 'semana-legenda';
+    legenda.textContent = 'O que falta lecionar, semana a semana';
+    resumoEl.appendChild(legenda);
+
+    var grid = document.createElement('div');
+    grid.className = 'semana-grid';
+    linhasComPendente.forEach(function(sem){
+      var doSemana = porSemana[sem];
+      var porOcorrencia = {};
+      doSemana.forEach(function(a){ porOcorrencia[a.ocorrencia] = a; });
+      var temHoje = doSemana.some(function(a){ return a.data === TODAY; });
+      var row = document.createElement('div');
+      row.className = 'semana-row' + (temHoje ? ' atual' : '');
+      for(var col = 0; col < 3; col++){
+        var a = porOcorrencia[col];
+        var cell = document.createElement('div');
+        if(!a || a.data < TODAY){
+          cell.className = 'semana-cell vazio';
+        } else {
+          cell.className = 'semana-cell';
+          cell.innerHTML = '<span class="sc-data">'+esc(a.dia_semana.slice(0,3))+'. '+esc(fmtCurto(a.data))+'</span>' +
+            '<span class="sc-mod">'+esc(a.modalidade)+'</span>' +
+            '<span class="sc-esp">'+esc(a.espaco)+'</span>';
+        }
+        row.appendChild(cell);
+      }
+      grid.appendChild(row);
+    });
+    resumoEl.appendChild(grid);
+  }
+
+  function setEstado(codigo, status){
+    var key = rstate.turma + '_' + rstate.periodo;
+    var atual = ESTADO_ALL[key] || {};
+    var novo = (atual[codigo] === status) ? null : status;
+    atual = Object.assign({}, atual);
+    atual[codigo] = novo;
+    ESTADO_ALL[key] = atual;
+    saveEstadoAll();
+    renderRoteiro();
+  }
+
+  function renderRoteiro(){
+    if(!rstate.turma || !PLANIF.turmas[rstate.turma]) return;
+    var t = PLANIF.turmas[rstate.turma];
+    var p = t[rstate.periodo];
+    var listEl = document.getElementById('list');
+    var statsEl = document.getElementById('stats');
+    var noticeEl = document.getElementById('notice-area');
+    listEl.innerHTML = ''; noticeEl.innerHTML = '';
+    renderResumo(p.aulas);
+    var estadoAtual = getEstadoPeriodo(rstate.turma, rstate.periodo);
+    var resumoInfo = computePendencias(p.aulas, estadoAtual);
+
+    var totalAno = ['P1','P2','P3'].reduce(function(acc,pk){ return acc + t[pk].aulas.length; },0);
+    var doneAno = ['P1','P2','P3'].reduce(function(acc,pk){
+      return acc + t[pk].aulas.filter(function(a){ return a.data < TODAY; }).length;
+    },0);
+    statsEl.innerHTML =
+      '<span><b>'+p.aulas.length+'</b> aulas neste período</span>' +
+      '<span class="dot">·</span>' +
+      '<span><b>'+totalAno+'</b> aulas no ano letivo</span>' +
+      '<span class="dot">·</span>' +
+      '<span><b>'+doneAno+'</b> já dadas até hoje</span>';
+
+    if(resumoInfo.totalPendente > 0){
+      var divPend = document.createElement('div');
+      divPend.className = 'notice danger';
+      divPend.innerHTML = '<span>⚠️</span><span><b>'+resumoInfo.totalPendente+' aula'+(resumoInfo.totalPendente===1?'':'s')+'</b> '+(resumoInfo.totalPendente===1?'fica':'ficam')+' por concluir neste período, depois de esgotadas as aulas de acerto: '+
+        esc(resumoInfo.pendentesPorMateria.join(', ')) + '. Fica registado para o balanço de fim de período.</span>';
+      noticeEl.appendChild(divPend);
+    }
+    if(p.sem_data && p.sem_data.length){
+      var div = document.createElement('div');
+      div.className = 'notice';
+      div.innerHTML = '<span>⚠️</span><span><b>'+p.sem_data.length+' aula(s)</b> desta sequência não cabem no calendário desta turma neste período (faltam espaços na grelha horária) — ficam por lecionar ou passam para ajuste manual: '+
+        p.sem_data.map(function(x){ return '<span class="mono">'+esc(x.codigo)+'</span>'; }).join(', ') + '.</span>';
+      noticeEl.appendChild(div);
+    }
+    if(!p.aulas.length){
+      listEl.innerHTML = '<div class="empty">Sem aulas registadas neste período.</div>';
+      return;
+    }
+
+    var lastMonth = null;
+    var todayCardId = null;
+    p.aulas.forEach(function(a, idx){
+      var d = fmtDia(a.data);
+      var monthKey = d.getFullYear()+'-'+d.getMonth();
+      if(monthKey !== lastMonth){
+        lastMonth = monthKey;
+        var lab = document.createElement('div');
+        lab.className = 'month-label';
+        lab.textContent = MESES[d.getMonth()] + ' ' + d.getFullYear();
+        listEl.appendChild(lab);
+      }
+      var isToday = a.data === TODAY;
+      var isNext = !isToday && a.data >= TODAY && todayCardId===null;
+      var status = estadoAtual[a.codigo] || null;
+
+      var card = document.createElement('div');
+      card.className = 'card' + (isToday ? ' is-today' : '') +
+        (status === 'dada' ? ' status-dada' : status === 'nao_dada' ? ' status-naodada' : '');
+      if(isToday || isNext){ card.id = 'card-marked'; if(todayCardId===null) todayCardId = true; }
+
+      var detId = 'det-'+idx;
+      card.innerHTML =
+        '<div class="datebox"><div class="dow">'+esc(a.dia_semana.slice(0,3))+'</div><div class="dom">'+d.getDate()+'</div><div class="mon">'+MESES[d.getMonth()]+'</div></div>' +
+        '<div class="body">' +
+          '<div class="rowline">' +
+            '<span class="chip aulan">Aula '+a.aula+'</span>' +
+            '<span class="chip codigo">'+esc(a.codigo)+'</span>' +
+            (isAcerto(a) ? '<span class="chip acerto">Acerto</span>' : '') +
+            (isToday ? '<span class="chip" style="background:var(--accent);color:#fff;">HOJE</span>' : '') +
+          '</div>' +
+          '<div class="modalidade">'+esc(a.modalidade)+'</div>' +
+          '<p class="sumario">'+esc(a.sumario)+'</p>' +
+          (a.detalhado && a.detalhado !== a.sumario ? ('<button class="detalhe-toggle" type="button">ver conteúdo detalhado</button><div class="detalhado" id="'+detId+'">'+esc(a.detalhado)+'</div>') : '') +
+        '</div>' +
+        '<div class="actions">' +
+          '<div class="row-mobile">' +
+            '<div class="space-tag">'+esc(a.espaco || '—')+'</div>' +
+            '<div class="status-toggle">' +
+              '<button class="st-btn st-dada'+(status==='dada'?' active':'')+'" type="button" title="Marcar como dada">✓ Dada</button>' +
+              '<button class="st-btn st-naodada'+(status==='nao_dada'?' active':'')+'" type="button" title="Marcar como não dada">✗ Não dada</button>' +
+            '</div>' +
+          '</div>' +
+          '<button class="copy-btn" type="button">📋 Copiar sumário</button>' +
+        '</div>';
+
+      var toggleBtn = card.querySelector('.detalhe-toggle');
+      if(toggleBtn){
+        toggleBtn.addEventListener('click', function(){
+          var det = card.querySelector('.detalhado');
+          det.classList.toggle('open');
+          toggleBtn.textContent = det.classList.contains('open') ? 'ocultar conteúdo detalhado' : 'ver conteúdo detalhado';
+        });
+      }
+      card.querySelector('.copy-btn').addEventListener('click', function(){ copyText(a.sumario, this); });
+      card.querySelector('.st-dada').addEventListener('click', function(){ setEstado(a.codigo, 'dada'); });
+      card.querySelector('.st-naodada').addEventListener('click', function(){ setEstado(a.codigo, 'nao_dada'); });
+      listEl.appendChild(card);
+    });
+  }
+
+  function renderTabsPeriodo(){
+    var tabsWrap = document.getElementById('tabs-periodo');
+    tabsWrap.innerHTML = '';
+    ['P1','P2','P3'].forEach(function(pk){
+      var b = document.createElement('button');
+      b.textContent = pk;
+      b.title = PERIODO_LABEL[pk];
+      b.setAttribute('role','tab');
+      b.className = (rstate.periodo===pk) ? 'active' : '';
+      b.addEventListener('click', function(){ rstate.periodo = pk; saveRState(); renderTabsPeriodo(); renderRoteiro(); });
+      tabsWrap.appendChild(b);
+    });
+  }
+
+  function buildSelTurma(){
+    var selTurma = document.getElementById('sel-turma');
+    selTurma.innerHTML = '';
+    var turmas = turmasOrdenadas();
+    ['7','8','9'].forEach(function(ano){
+      var lista = turmas.filter(function(t){ return t[0]===ano; });
+      if(!lista.length) return;
+      var og = document.createElement('optgroup');
+      og.label = ano + '.º ano';
+      lista.forEach(function(t){
+        var opt = document.createElement('option');
+        opt.value = t; opt.textContent = t;
+        og.appendChild(opt);
+      });
+      selTurma.appendChild(og);
+    });
+    if(!rstate.turma || turmas.indexOf(rstate.turma) === -1) rstate.turma = turmas[0] || null;
+    if(rstate.turma) selTurma.value = rstate.turma;
+    selTurma.onchange = function(){
+      rstate.turma = this.value;
+      rstate.periodo = periodoDeHoje(rstate.turma);
+      saveRState(); renderTabsPeriodo(); renderRoteiro();
+    };
+  }
+
+  // ---------- PDF (impressão nativa do browser) ----------
+  function buildPrintArea(turmaCode){
+    var t = PLANIF.turmas[turmaCode];
+    var pks = ['P1','P2','P3'].filter(function(pk){ return t[pk].aulas.length; });
+    var incluirDadas = !!document.getElementById('chk-dadas').checked;
+    var incluirPend = !!document.getElementById('chk-pend').checked;
+    var html = '<h1>Educação Física — Calendarização de Conteúdos</h1>' +
+      '<p class="p-sub"><b>Turma:</b> '+esc(turmaCode)+' &nbsp;|&nbsp; <b>Gerado em:</b> '+fmtDataPT(TODAY)+'</p>';
+    pks.forEach(function(pk){
+      var p = t[pk];
+      html += '<h2>'+esc(p.nome)+'</h2>';
+      if(incluirDadas){
+        var res = resumoLecionadas(p.aulas);
+        if(res.total > 0){
+          html += '<div class="p-dadas"><b>Aulas já lecionadas — '+esc(p.nome)+':</b> '+res.total+' aula'+(res.total===1?'':'s')+
+            ' — ' + esc(res.itens.join(', ')) + '.</div>';
+        } else {
+          html += '<div class="p-dadas"><b>Aulas já lecionadas — '+esc(p.nome)+':</b> nenhuma aula deste período foi dada até hoje.</div>';
+        }
+      }
+      html += '<table><thead><tr>' +
+          '<th class="center">Aula n.º</th><th class="center">Data</th><th class="center">Dia</th>' +
+          '<th class="center">Espaço</th><th>Modalidade</th><th>Sumário</th>' +
+        '</tr></thead><tbody>';
+      p.aulas.forEach(function(a){
+        html += '<tr>' +
+          '<td class="center">'+a.aula+'</td>' +
+          '<td class="center">'+fmtDataPT(a.data)+'</td>' +
+          '<td class="center">'+esc(a.dia_semana)+'</td>' +
+          '<td class="center">'+esc(a.espaco || '—')+'</td>' +
+          '<td>'+esc(a.modalidade)+'</td>' +
+          '<td>'+esc(a.sumario)+'</td>' +
+        '</tr>';
+      });
+      html += '</tbody></table>';
+      if(incluirPend){
+        var estado = getEstadoPeriodo(turmaCode, pk);
+        var pend = computePendencias(p.aulas, estado);
+        var semData = p.sem_data || [];
+        var partes = [];
+        if(pend.totalPendente > 0){
+          partes.push(pend.totalPendente + ' aula' + (pend.totalPendente===1?'':'s') +
+            ' marcada' + (pend.totalPendente===1?'':'s') + ' como não dada, sem aula de acerto disponível: ' +
+            esc(pend.pendentesPorMateria.join(', ')) + '.');
+        }
+        if(semData.length){
+          partes.push(semData.length + ' aula(s) desta sequência não couberam no calendário desta turma neste período: ' +
+            esc(semData.map(function(x){ return x.codigo; }).join(', ')) + '.');
+        }
+        if(partes.length){
+          html += '<div class="p-pend"><b>Aulas não lecionadas / por concluir — '+esc(p.nome)+':</b> ' + partes.join(' ') + '</div>';
+        }
+      }
+    });
+    document.getElementById('print-area').innerHTML = html;
+  }
+
+  function initRoteiroListeners(){
+    document.getElementById('btn-pdf').addEventListener('click', function(){
+      buildPrintArea(rstate.turma);
+      setTimeout(function(){ window.print(); }, 30);
+    });
+    document.getElementById('btn-hoje').addEventListener('click', function(){
+      rstate.periodo = periodoDeHoje(rstate.turma);
+      saveRState(); renderTabsPeriodo(); renderRoteiro();
+      requestAnimationFrame(function(){
+        var elc = document.getElementById('card-marked');
+        if(elc){ elc.scrollIntoView({behavior:'smooth', block:'center'}); }
+        else { showToast('Sem aulas próximas de hoje para esta turma neste ano letivo.'); }
+      });
+    });
+  }
+
+  // ================================================================
+  // TOP TABS (Roteiro / Configuração)
+  // ================================================================
+  function initTopTabs(){
+    var bR = document.getElementById('toptab-roteiro');
+    var bC = document.getElementById('toptab-config');
+    var vR = document.getElementById('view-roteiro');
+    var vC = document.getElementById('view-config');
+    bR.addEventListener('click', function(){
+      bR.classList.add('active'); bC.classList.remove('active');
+      vR.hidden = false; vC.hidden = true;
+      renderRoteiro();
+    });
+    bC.addEventListener('click', function(){
+      bC.classList.add('active'); bR.classList.remove('active');
+      vC.hidden = false; vR.hidden = true;
+    });
+  }
+
+  // ================================================================
+  // CONFIGURAÇÃO — ações gerais
+  // ================================================================
+  function initConfigActions(){
+    document.getElementById('btn-exportar').addEventListener('click', exportarJSON);
+    document.getElementById('btn-repor').addEventListener('click', reporExemplo);
+    var fileInput = document.getElementById('file-importar');
+    document.getElementById('btn-importar').addEventListener('click', function(){ fileInput.click(); });
+    fileInput.addEventListener('change', function(){
+      if(this.files && this.files[0]) importarJSON(this.files[0]);
+      this.value = '';
+    });
+
+    var tabs = { turmas: document.getElementById('cfgtab-turmas'), calendario: document.getElementById('cfgtab-calendario'), conteudos: document.getElementById('cfgtab-conteudos') };
+    var panels = { turmas: document.getElementById('cfg-turmas'), calendario: document.getElementById('cfg-calendario'), conteudos: document.getElementById('cfg-conteudos') };
+    function activate(key){
+      Object.keys(tabs).forEach(function(k){
+        tabs[k].classList.toggle('active', k===key);
+        panels[k].hidden = (k!==key);
+      });
+      if(key==='turmas') renderCfgTurmas();
+      if(key==='calendario') renderCfgCalendario();
+      if(key==='conteudos') renderCfgConteudos();
+    }
+    tabs.turmas.addEventListener('click', function(){ activate('turmas'); });
+    tabs.calendario.addEventListener('click', function(){ activate('calendario'); });
+    tabs.conteudos.addEventListener('click', function(){ activate('conteudos'); });
+    activate('turmas');
+  }
+
+  function onMutated(){
+    saveStoreDebounced();
+    recompute();
+  }
+
+  // ================================================================
+  // CONFIGURAÇÃO > Turmas e espaços
+  // ================================================================
+  function renderCfgTurmas(){
+    var root = document.getElementById('cfg-turmas');
+    root.innerHTML = '';
+
+    // --- espaços (nomes) ---
+    var panelEsp = el('<div class="panel"><h3>Espaços</h3><p class="sub">Os nomes dos espaços usados na rotação. Mudar um nome aqui atualiza-o em todas as turmas automaticamente.</p><div class="field-row" id="esp-fields"></div></div>');
+    var espFields = panelEsp.querySelector('#esp-fields');
+    STORE.motor.espacos.forEach(function(nome, i){
+      var f = el('<div class="field"><label>Espaço '+(i+1)+'</label><input type="text" value="'+esc(nome)+'"></div>');
+      var input = f.querySelector('input');
+      input.addEventListener('change', function(){
+        var novo = input.value.trim();
+        if(!novo){ input.value = STORE.motor.espacos[i]; return; }
+        var antigo = STORE.motor.espacos[i];
+        if(novo === antigo) return;
+        STORE.motor.espacos[i] = novo;
+        // propaga o novo nome a todas as referências (turmas)
+        STORE.motor.turmasAll.forEach(function(t){
+          [3,4,5].forEach(function(k){
+            t[k] = t[k].map(function(e){ return e === antigo ? novo : e; });
+          });
+        });
+        onMutated();
+        showToast('Espaço atualizado em todas as turmas.');
+        renderCfgTurmas();
+      });
+      espFields.appendChild(f);
+    });
+    root.appendChild(panelEsp);
+
+    // --- turmas ---
+    var panelTurmas = el('<div class="panel"><h3>Turmas e rotação de espaços</h3><p class="sub">Para cada turma: o dia da semana em que tem duas aulas ("dia duplo") e o dia em que tem uma só ("dia simples"), e o espaço atribuído em cada uma das 6 semanas-tipo do mês (a rotação evita repetir sempre o mesmo espaço). </p></div>');
+    var btnAdd = el('<button class="btn-ghost" type="button">+ adicionar turma</button>');
+    btnAdd.addEventListener('click', function(){
+      var code = window.prompt('Código da nova turma (deve começar por 7, 8 ou 9, ex: 7E):');
+      if(!code) return;
+      code = code.trim();
+      if(!/^[789]/.test(code)){ showToast('O código deve começar por 7, 8 ou 9.'); return; }
+      if(STORE.motor.turmasAll.some(function(t){ return t[0]===code; })){ showToast('Já existe uma turma com esse código.'); return; }
+      var esp0 = STORE.motor.espacos[0];
+      STORE.motor.turmasAll.push([code, 1, 3, [esp0,esp0,esp0,esp0,esp0,esp0], [esp0,esp0,esp0,esp0,esp0,esp0], [esp0,esp0,esp0,esp0,esp0,esp0]]);
+      onMutated();
+      renderCfgTurmas();
+      showToast('Turma '+code+' adicionada — ajuste os dias e espaços.');
+    });
+    panelTurmas.appendChild(btnAdd);
+    root.appendChild(panelTurmas);
+
+    STORE.motor.turmasAll.forEach(function(t, ti){
+      var code = t[0];
+      var card = el(
+        '<details class="turma-card">' +
+          '<summary><span class="tc-code">'+esc(code)+'</span><span class="tc-sub">dia duplo: '+DIAS_LABEL[t[1]]+' · dia simples: '+DIAS_LABEL[t[2]]+'</span></summary>' +
+          '<div class="tc-body">' +
+            '<div class="field-row">' +
+              '<div class="field"><label>Código</label><input type="text" class="f-code" value="'+esc(code)+'"></div>' +
+              '<div class="field"><label>Dia duplo</label><select class="f-dd"></select></div>' +
+              '<div class="field"><label>Dia simples</label><select class="f-ds"></select></div>' +
+              '<div class="field"><button class="btn-danger f-remove" type="button">Remover turma</button></div>' +
+            '</div>' +
+            '<div class="esp-blocks"></div>' +
+          '</div>' +
+        '</details>'
+      );
+      // dd/ds selects
+      [card.querySelector('.f-dd'), card.querySelector('.f-ds')].forEach(function(sel, which){
+        for(var d=1; d<=5; d++){
+          var opt = document.createElement('option'); opt.value=d; opt.textContent = DIAS_LABEL[d];
+          sel.appendChild(opt);
+        }
+        sel.value = which===0 ? t[1] : t[2];
+        sel.addEventListener('change', function(){
+          var idx = which===0 ? 1 : 2;
+          STORE.motor.turmasAll[ti][idx] = Number(sel.value);
+          onMutated();
+          card.querySelector('summary .tc-sub').textContent = 'dia duplo: '+DIAS_LABEL[STORE.motor.turmasAll[ti][1]]+' · dia simples: '+DIAS_LABEL[STORE.motor.turmasAll[ti][2]];
+        });
+      });
+      card.querySelector('.f-code').addEventListener('change', function(){
+        var inputEl = this;
+        var novo = inputEl.value.trim();
+        if(!novo || !/^[789]/.test(novo)){ showToast('O código deve começar por 7, 8 ou 9.'); inputEl.value = STORE.motor.turmasAll[ti][0]; return; }
+        if(novo !== STORE.motor.turmasAll[ti][0] && STORE.motor.turmasAll.some(function(x,xi){ return xi!==ti && x[0]===novo; })){ showToast('Já existe essa turma.'); inputEl.value = STORE.motor.turmasAll[ti][0]; return; }
+        STORE.motor.turmasAll[ti][0] = novo;
+        onMutated();
+        card.querySelector('.tc-code').textContent = novo;
+      });
+      card.querySelector('.f-remove').addEventListener('click', function(){
+        if(!window.confirm('Remover a turma '+STORE.motor.turmasAll[ti][0]+'? Esta ação não pode ser desfeita.')) return;
+        STORE.motor.turmasAll.splice(ti, 1);
+        onMutated();
+        renderCfgTurmas();
+      });
+
+      var espBlocksWrap = card.querySelector('.esp-blocks');
+      [
+        {idx:3, label:'1.ª aula do dia duplo'},
+        {idx:4, label:'2.ª aula do dia duplo'},
+        {idx:5, label:'aula do dia simples'}
+      ].forEach(function(spec){
+        var block = el('<div class="esp-block"><div class="lab">'+spec.label+' — espaço por semana do mês</div><div class="grid-espacos banda-labs"></div><div class="grid-espacos"></div></div>');
+        var labsRow = block.querySelector('.banda-labs');
+        for(var b=1;b<=6;b++){ labsRow.appendChild(el('<div class="banda-lab">Semana '+b+'</div>')); }
+        var selRow = block.querySelectorAll('.grid-espacos')[1];
+        for(var bi=0; bi<6; bi++){
+          var sel = document.createElement('select');
+          STORE.motor.espacos.forEach(function(nome){
+            var opt = document.createElement('option'); opt.value = nome; opt.textContent = nome;
+            sel.appendChild(opt);
+          });
+          sel.value = t[spec.idx][bi];
+          (function(spec, bi, sel){
+            sel.addEventListener('change', function(){
+              STORE.motor.turmasAll[ti][spec.idx][bi] = sel.value;
+              onMutated();
+            });
+          })(spec, bi, sel);
+          selRow.appendChild(sel);
+        }
+        espBlocksWrap.appendChild(block);
+      });
+
+      panelTurmas.appendChild(card);
+    });
+  }
+
+  // ================================================================
+  // CONFIGURAÇÃO > Calendário letivo
+  // ================================================================
+  function calcNweeks(inicio, fim){
+    var d1 = RoteiroEngine.parseISO(inicio), d2 = RoteiroEngine.parseISO(fim);
+    var days = Math.round((d2 - d1) / 86400000);
+    return Math.max(1, Math.floor(days/7) + 2);
+  }
+
+  function renderCfgCalendario(){
+    var root = document.getElementById('cfg-calendario');
+    root.innerHTML = '';
+
+    var panelP = el('<div class="panel"><h3>Períodos letivos</h3><p class="sub">O número de semanas é calculado automaticamente a partir das datas de início e fim — não precisa de o indicar.</p></div>');
+    STORE.calendario.periodos.forEach(function(p, pi){
+      var row = el(
+        '<div class="field-row">' +
+          '<div class="field"><label>Nome</label><input type="text" class="p-nome" value="'+esc(p.nome)+'"></div>' +
+          '<div class="field"><label>Início</label><input type="date" class="p-inicio" value="'+esc(p.inicio)+'"></div>' +
+          '<div class="field"><label>Fim</label><input type="date" class="p-fim" value="'+esc(p.fim)+'"></div>' +
+          '<div class="field"><label>Semanas (calculado)</label><input type="text" class="p-nweeks" value="'+p.nweeks+'" disabled></div>' +
+        '</div>'
+      );
+      row.querySelector('.p-nome').addEventListener('input', function(){
+        STORE.calendario.periodos[pi].nome = this.value; onMutated();
+      });
+      function atualizarDatas(){
+        var ini = row.querySelector('.p-inicio').value, fim = row.querySelector('.p-fim').value;
+        if(!ini || !fim) return;
+        STORE.calendario.periodos[pi].inicio = ini;
+        STORE.calendario.periodos[pi].fim = fim;
+        STORE.calendario.periodos[pi].nweeks = calcNweeks(ini, fim);
+        row.querySelector('.p-nweeks').value = STORE.calendario.periodos[pi].nweeks;
+        onMutated();
+      }
+      row.querySelector('.p-inicio').addEventListener('change', atualizarDatas);
+      row.querySelector('.p-fim').addEventListener('change', atualizarDatas);
+      panelP.appendChild(row);
+    });
+    root.appendChild(panelP);
+
+    var panelEx = el('<div class="panel"><h3>Feriados e interrupções letivas</h3><p class="sub">Datas em que não há aulas (feriados, férias, pontes). Estas datas são simplesmente saltadas no calendário — não é preciso remover manualmente aulas à volta delas.</p></div>');
+    var tbl = el('<table class="ed-table"><thead><tr><th style="width:160px">Data</th><th>Motivo</th><th style="width:40px"></th></tr></thead><tbody></tbody></table>');
+    var tbody = tbl.querySelector('tbody');
+    STORE.calendario.exclusoes.slice().sort(function(a,b){ return a.data < b.data ? -1 : 1; }).forEach(function(exObj){
+      var i = STORE.calendario.exclusoes.indexOf(exObj);
+      var tr = el('<tr><td><input type="date" value="'+esc(exObj.data)+'"></td><td><input type="text" value="'+esc(exObj.motivo)+'"></td><td><button class="btn-icon" type="button" title="Remover">✕</button></td></tr>');
+      tr.querySelector('input[type=date]').addEventListener('change', function(){
+        STORE.calendario.exclusoes[i].data = this.value; onMutated();
+      });
+      tr.querySelector('input[type=text]').addEventListener('input', function(){
+        STORE.calendario.exclusoes[i].motivo = this.value; onMutated();
+      });
+      tr.querySelector('button').addEventListener('click', function(){
+        STORE.calendario.exclusoes.splice(i, 1);
+        onMutated();
+        renderCfgCalendario();
+      });
+      tbody.appendChild(tr);
+    });
+    panelEx.appendChild(tbl);
+    var btnAddEx = el('<button class="btn-ghost" type="button" style="margin-top:10px;">+ adicionar data</button>');
+    btnAddEx.addEventListener('click', function(){
+      STORE.calendario.exclusoes.push({data: todayISO(), motivo: ''});
+      onMutated();
+      renderCfgCalendario();
+    });
+    panelEx.appendChild(btnAddEx);
+    root.appendChild(panelEx);
+
+    var panelRange = el(
+      '<div class="panel"><h3>Adicionar várias datas seguidas</h3><p class="sub">Útil para períodos de férias (ex.: Natal, Carnaval, Páscoa) — adiciona todos os dias do intervalo, um por um.</p>' +
+        '<div class="field-row">' +
+          '<div class="field"><label>De</label><input type="date" class="r-ini"></div>' +
+          '<div class="field"><label>Até</label><input type="date" class="r-fim"></div>' +
+          '<div class="field"><label>Motivo</label><input type="text" class="r-motivo" placeholder="ex: Férias de Natal"></div>' +
+          '<div class="field"><button class="btn-primary" type="button">Adicionar</button></div>' +
+        '</div></div>'
+    );
+    panelRange.querySelector('button').addEventListener('click', function(){
+      var ini = panelRange.querySelector('.r-ini').value, fim = panelRange.querySelector('.r-fim').value, motivo = panelRange.querySelector('.r-motivo').value.trim();
+      if(!ini || !fim){ showToast('Indique a data de início e de fim.'); return; }
+      var d1 = RoteiroEngine.parseISO(ini), d2 = RoteiroEngine.parseISO(fim);
+      if(d2 < d1){ showToast('A data de fim tem de ser posterior à de início.'); return; }
+      var d = d1, count = 0;
+      while(d <= d2){
+        STORE.calendario.exclusoes.push({data: RoteiroEngine.toISO(d), motivo: motivo || 'Interrupção letiva'});
+        d = RoteiroEngine.addDays(d, 1);
+        count++;
+      }
+      onMutated();
+      showToast(count + ' data(s) adicionada(s).');
+      renderCfgCalendario();
+    });
+    root.appendChild(panelRange);
+  }
+
+  // ================================================================
+  // CONFIGURAÇÃO > Sequência de conteúdos
+  // ================================================================
+  var cfgConteudoState = { sub: 'sequencia', grade: '7', kind: 'grade', kindGrade: '7', prefixoSel: null };
+
+  function todosPrefixos(){
+    return Object.keys(STORE.motor.lessonContent).sort();
+  }
+  function nomeModalidade(prefixo){
+    return STORE.motor.sheetName[prefixo] || prefixo;
+  }
+  function isGradeKeyed(prefixo){
+    return STORE.motor.jdcGradeKeyed.indexOf(prefixo) !== -1 || STORE.motor.gradeKeyedPlain.indexOf(prefixo) !== -1;
+  }
+  function isJdc(prefixo){ return STORE.motor.jdcGradeKeyed.indexOf(prefixo) !== -1; }
+
+  function ensureContentList(prefixo, n){
+    var by = STORE.motor.lessonContent[prefixo];
+    if(!by) { by = {}; STORE.motor.lessonContent[prefixo] = by; }
+    var key = String(n);
+    if(!by[key]){
+      var arr = [];
+      for(var i=0;i<n;i++) arr.push(['(por preencher)', '']);
+      by[key] = arr;
+    }
+  }
+
+  function usosDoNKey(prefixo, n){
+    var usos = [];
+    ['7','8','9'].forEach(function(grade){
+      STORE.motor.periodoKeys.forEach(function(pk){
+        (STORE.motor.gradePeriodos[grade][pk] || []).forEach(function(pair){
+          if(pair[0] === prefixo && pair[1] === n) usos.push(grade+'/'+pk);
+        });
+      });
+    });
+    return usos;
+  }
+
+  function renderCfgConteudos(){
+    var root = document.getElementById('cfg-conteudos');
+    root.innerHTML = '';
+
+    var subTabs = el(
+      '<div class="cfg-tabs">' +
+        '<button class="sub-seq" type="button">Sequência por ano/período</button>' +
+        '<button class="sub-cont" type="button">Conteúdo das modalidades</button>' +
+      '</div>'
+    );
+    subTabs.querySelector('.sub-seq').classList.toggle('active', cfgConteudoState.sub === 'sequencia');
+    subTabs.querySelector('.sub-cont').classList.toggle('active', cfgConteudoState.sub === 'conteudo');
+    subTabs.querySelector('.sub-seq').addEventListener('click', function(){ cfgConteudoState.sub='sequencia'; renderCfgConteudos(); });
+    subTabs.querySelector('.sub-cont').addEventListener('click', function(){ cfgConteudoState.sub='conteudo'; renderCfgConteudos(); });
+    root.appendChild(subTabs);
+
+    var body = el('<div></div>');
+    root.appendChild(body);
+    if(cfgConteudoState.sub === 'sequencia') renderSequenciaAno(body);
+    else renderConteudoModalidades(body);
+  }
+
+  function renderSequenciaAno(root){
+    var info = el('<div class="notice info"><span>ℹ️</span><span>Para cada ano e período, a ordem dos blocos e o número de aulas de cada modalidade. O número de aulas só é editável quando a modalidade partilha conteúdo por número de aulas (ex: Atletismo — Corridas); nas modalidades organizadas por ano (ex: Basquetebol, Ginástica de Solo) o número é definido automaticamente pelo conteúdo criado em "Conteúdo das modalidades".</span></div>');
+    root.appendChild(info);
+
+    var gradeTabs = el('<div class="tabs" role="tablist"></div>');
+    ['7','8','9'].forEach(function(g){
+      var b = document.createElement('button');
+      b.textContent = g + '.º ano';
+      b.className = cfgConteudoState.grade === g ? 'active' : '';
+      b.addEventListener('click', function(){ cfgConteudoState.grade = g; renderCfgConteudos(); });
+      gradeTabs.appendChild(b);
+    });
+    root.appendChild(gradeTabs);
+
+    var grade = cfgConteudoState.grade;
+    STORE.motor.periodoKeys.forEach(function(pk){
+      var blocks = STORE.motor.gradePeriodos[grade][pk];
+      var panel = el('<div class="panel"><h3>'+PERIODO_LABEL[pk]+'</h3></div>');
+      var totalN = blocks.reduce(function(a,b){ return a+b[1]; }, 0);
+      panel.appendChild(el('<p class="sub">Total: '+totalN+' aulas neste período.</p>'));
+
+      blocks.forEach(function(pair, bi){
+        var prefixo = pair[0], n = pair[1];
+        var locked = isGradeKeyed(prefixo);
+        var row = el(
+          '<div class="field-row" style="align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;">' +
+            '<div class="field" style="min-width:190px"><label>Modalidade</label><select class="b-prefixo"></select></div>' +
+            '<div class="field" style="width:90px"><label>N.º de aulas</label><input type="number" min="1" class="b-n" value="'+n+'" '+(locked?'disabled title="Determinado pelo conteúdo criado para esta modalidade e ano"':'')+'></div>' +
+            '<div class="field"><button class="btn-icon b-up" type="button" title="Mover para cima">↑</button></div>' +
+            '<div class="field"><button class="btn-icon b-down" type="button" title="Mover para baixo">↓</button></div>' +
+            '<div class="field"><button class="btn-danger b-remove" type="button">Remover</button></div>' +
+          '</div>'
+        );
+        var selP = row.querySelector('.b-prefixo');
+        todosPrefixos().forEach(function(p){
+          var opt = document.createElement('option'); opt.value = p; opt.textContent = p + ' — ' + nomeModalidade(p);
+          selP.appendChild(opt);
+        });
+        selP.value = prefixo;
+        selP.addEventListener('change', function(){
+          STORE.motor.gradePeriodos[grade][pk][bi][0] = selP.value;
+          if(!isGradeKeyed(selP.value)){
+            var curN = STORE.motor.gradePeriodos[grade][pk][bi][1];
+            ensureContentList(selP.value, curN);
+          }
+          onMutated();
+          renderCfgConteudos();
+        });
+        row.querySelector('.b-n').addEventListener('change', function(){
+          var novoN = Math.max(1, parseInt(this.value,10) || 1);
+          STORE.motor.gradePeriodos[grade][pk][bi][1] = novoN;
+          if(!locked) ensureContentList(prefixo, novoN);
+          onMutated();
+          renderCfgConteudos();
+        });
+        row.querySelector('.b-up').addEventListener('click', function(){
+          if(bi===0) return;
+          var arr = STORE.motor.gradePeriodos[grade][pk];
+          var tmp = arr[bi-1]; arr[bi-1] = arr[bi]; arr[bi] = tmp;
+          onMutated(); renderCfgConteudos();
+        });
+        row.querySelector('.b-down').addEventListener('click', function(){
+          var arr = STORE.motor.gradePeriodos[grade][pk];
+          if(bi===arr.length-1) return;
+          var tmp = arr[bi+1]; arr[bi+1] = arr[bi]; arr[bi] = tmp;
+          onMutated(); renderCfgConteudos();
+        });
+        row.querySelector('.b-remove').addEventListener('click', function(){
+          if(!window.confirm('Remover este bloco da sequência?')) return;
+          STORE.motor.gradePeriodos[grade][pk].splice(bi, 1);
+          onMutated(); renderCfgConteudos();
+        });
+        panel.appendChild(row);
+      });
+
+      var btnAddBlock = el('<button class="btn-ghost" type="button" style="margin-top:10px;">+ adicionar bloco</button>');
+      btnAddBlock.addEventListener('click', function(){
+        var novoPrefixo = todosPrefixos()[0];
+        STORE.motor.gradePeriodos[grade][pk].push([novoPrefixo, 1]);
+        if(!isGradeKeyed(novoPrefixo)) ensureContentList(novoPrefixo, 1);
+        onMutated();
+        renderCfgConteudos();
+      });
+      panel.appendChild(btnAddBlock);
+      root.appendChild(panel);
+    });
+  }
+
+  function arraySwap(arr, i, j){ var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+
+  function renderRowsEditor(container, rows, fields, onChangeStructural, opts){
+    // fields: array of {idx, label, kind:'text'|'textarea'}
+    // opts.linked: array kept in lockstep with `rows` on reorder/remove (e.g. tópicos alinhados por índice)
+    var linked = opts && opts.linked;
+    rows.forEach(function(row, ri){
+      var wrap = el('<div class="aula-row"><div class="aula-row-head"><span class="idx">Item '+(ri+1)+'</span><div class="aula-row-actions"></div></div><div class="aula-row-fields"></div></div>');
+      var actions = wrap.querySelector('.aula-row-actions');
+      var btnUp = el('<button class="btn-icon" type="button" title="Mover para cima">↑</button>');
+      var btnDown = el('<button class="btn-icon" type="button" title="Mover para baixo">↓</button>');
+      var btnDel = el('<button class="btn-icon" type="button" title="Remover">✕</button>');
+      btnUp.addEventListener('click', function(){
+        if(ri===0) return;
+        arraySwap(rows, ri, ri-1);
+        if(linked) arraySwap(linked, ri, ri-1);
+        onChangeStructural();
+      });
+      btnDown.addEventListener('click', function(){
+        if(ri===rows.length-1) return;
+        arraySwap(rows, ri, ri+1);
+        if(linked) arraySwap(linked, ri, ri+1);
+        onChangeStructural();
+      });
+      btnDel.addEventListener('click', function(){
+        if(!window.confirm('Remover este item?')) return;
+        rows.splice(ri, 1);
+        if(linked) linked.splice(ri, 1);
+        onChangeStructural();
+      });
+      actions.appendChild(btnUp); actions.appendChild(btnDown); actions.appendChild(btnDel);
+
+      var fieldsWrap = wrap.querySelector('.aula-row-fields');
+      fields.forEach(function(f){
+        var val = row[f.idx] === undefined || row[f.idx] === null ? '' : row[f.idx];
+        var fdiv = el('<div class="aula-field"><label>'+esc(f.label)+'</label>' +
+          (f.kind==='textarea' ? '<textarea rows="2"></textarea>' : '<input type="text">') + '</div>');
+        var input = fdiv.querySelector('textarea, input');
+        input.value = val;
+        input.addEventListener('input', function(){
+          row[f.idx] = input.value;
+          onMutated();
+        });
+        fieldsWrap.appendChild(fdiv);
+      });
+      container.appendChild(wrap);
+    });
+  }
+
+  // Tópicos (gesto/forma/regra) dos jogos desportivos coletivos: alinhados
+  // item a item com a lista de conteúdo acima, mas cada item pode não ter
+  // tópicos definidos (null) — nesse caso usa-se o "conteúdo detalhado" da
+  // lista de cima. O comprimento deste array é sempre igual ao da lista de
+  // conteúdo (mantido em sincronia pelo `linked` em renderRowsEditor).
+  function renderTopicsPanel(container, topics, onChangeStructural){
+    topics.forEach(function(item, ti){
+      if(item === null || item === undefined){
+        var rowVazia = el(
+          '<div class="aula-row">' +
+            '<div class="aula-row-head"><span class="idx">Item '+(ti+1)+'</span></div>' +
+            '<p class="sub" style="margin:0 0 8px;">Sem tópicos definidos — usa o texto de "conteúdo detalhado" da lista acima.</p>' +
+          '</div>'
+        );
+        var btnOn = el('<button class="btn-ghost" type="button">+ definir tópicos para este item</button>');
+        btnOn.addEventListener('click', function(){ topics[ti] = ['','','']; onChangeStructural(); });
+        rowVazia.appendChild(btnOn);
+        container.appendChild(rowVazia);
+        return;
+      }
+      var wrap = el('<div class="aula-row"><div class="aula-row-head"><span class="idx">Item '+(ti+1)+'</span><div class="aula-row-actions"></div></div><div class="aula-row-fields"></div></div>');
+      var btnOff = el('<button class="btn-icon" type="button" title="Remover tópicos (passa a usar o conteúdo detalhado)">✕</button>');
+      btnOff.addEventListener('click', function(){
+        if(!window.confirm('Remover os tópicos deste item? Passa a usar o texto de "conteúdo detalhado" da lista acima.')) return;
+        topics[ti] = null;
+        onChangeStructural();
+      });
+      wrap.querySelector('.aula-row-actions').appendChild(btnOff);
+      var fieldsWrap = wrap.querySelector('.aula-row-fields');
+      [['Gesto técnico',0],['Forma de organização',1],['Regra',2]].forEach(function(pair){
+        var fdiv = el('<div class="aula-field"><label>'+esc(pair[0])+'</label><textarea rows="2"></textarea></div>');
+        var input = fdiv.querySelector('textarea');
+        input.value = item[pair[1]] || '';
+        input.addEventListener('input', function(){ item[pair[1]] = input.value; onMutated(); });
+        fieldsWrap.appendChild(fdiv);
+      });
+      container.appendChild(wrap);
+    });
+  }
+
+  function renderConteudoModalidades(root){
+    var kindTabs = el(
+      '<div class="tabs" role="tablist">' +
+        '<button class="k-grade" type="button">Por ano (7º/8º/9º)</button>' +
+        '<button class="k-n" type="button">Por número de aulas</button>' +
+        '<button class="k-anual" type="button">Sequências anuais (APF/Conhecimentos)</button>' +
+      '</div>'
+    );
+    kindTabs.querySelector('.k-grade').classList.toggle('active', cfgConteudoState.kind==='grade');
+    kindTabs.querySelector('.k-n').classList.toggle('active', cfgConteudoState.kind==='n');
+    kindTabs.querySelector('.k-anual').classList.toggle('active', cfgConteudoState.kind==='anual');
+    kindTabs.querySelector('.k-grade').addEventListener('click', function(){ cfgConteudoState.kind='grade'; renderCfgConteudos(); });
+    kindTabs.querySelector('.k-n').addEventListener('click', function(){ cfgConteudoState.kind='n'; renderCfgConteudos(); });
+    kindTabs.querySelector('.k-anual').addEventListener('click', function(){ cfgConteudoState.kind='anual'; renderCfgConteudos(); });
+    root.appendChild(kindTabs);
+
+    if(cfgConteudoState.kind === 'grade') renderConteudoGrade(root);
+    else if(cfgConteudoState.kind === 'n') renderConteudoPorN(root);
+    else renderConteudoAnual(root);
+  }
+
+  function renderConteudoGrade(root){
+    var gradeTabs = el('<div class="tabs" role="tablist" style="margin-top:10px;"></div>');
+    ['7','8','9'].forEach(function(g){
+      var b = document.createElement('button');
+      b.textContent = g + '.º ano';
+      b.className = cfgConteudoState.kindGrade === g ? 'active' : '';
+      b.addEventListener('click', function(){ cfgConteudoState.kindGrade = g; renderCfgConteudos(); });
+      gradeTabs.appendChild(b);
+    });
+    root.appendChild(gradeTabs);
+
+    var grade = cfgConteudoState.kindGrade;
+    var prefixos = STORE.motor.jdcGradeKeyed.concat(STORE.motor.gradeKeyedPlain).sort();
+    prefixos.forEach(function(prefixo){
+      var content = (STORE.motor.lessonContent[prefixo] || {})[grade] || [];
+      var jdc = isJdc(prefixo);
+      var block = el('<div class="conteudo-block"><div class="cb-head"><span class="nome">'+esc(nomeModalidade(prefixo))+' ('+esc(prefixo)+')</span><span class="n">'+content.length+' aula(s) — '+grade+'.º ano</span></div><div class="rows"></div></div>');
+      var rowsWrap = block.querySelector('.rows');
+      var fields = jdc
+        ? [{idx:1,label:'Sumário',kind:'text'},{idx:2,label:'Função',kind:'text'},{idx:0,label:'Conteúdo detalhado (usado só se não houver tópicos)',kind:'textarea'}]
+        : [{idx:0,label:'Conteúdo',kind:'textarea'},{idx:1,label:'Função',kind:'text'}];
+      var topicsGrade = (jdc && STORE.motor.jdcTopics[prefixo]) ? STORE.motor.jdcTopics[prefixo][grade] : null;
+      renderRowsEditor(rowsWrap, content, fields, function(){
+        onMutated();
+        renderCfgConteudos();
+      }, { linked: topicsGrade || null });
+      var btnAdd = el('<button class="btn-ghost" type="button">+ adicionar aula</button>');
+      btnAdd.addEventListener('click', function(){
+        content.push(jdc ? ['(por preencher)','(por preencher)',''] : ['(por preencher)','']);
+        if(topicsGrade) topicsGrade.push(null); // por preencher: sem tópicos até serem definidos
+        onMutated();
+        renderCfgConteudos();
+      });
+      block.appendChild(btnAdd);
+
+      if(topicsGrade){
+        var topicsPanel = el('<div class="panel" style="margin-top:10px;background:var(--surface-2)"><h3 style="font-size:13px;">Tópicos detalhados (gesto / forma / regra) — usados no lugar do "conteúdo detalhado" acima quando existem, alinhados item a item com a lista de cima</h3><div class="rows"></div></div>');
+        var tRows = topicsPanel.querySelector('.rows');
+        renderTopicsPanel(tRows, topicsGrade, function(){ onMutated(); renderCfgConteudos(); });
+        block.appendChild(topicsPanel);
+      }
+      root.appendChild(block);
+    });
+  }
+
+  function renderConteudoPorN(root){
+    var excluir = STORE.motor.jdcGradeKeyed.concat(STORE.motor.gradeKeyedPlain, ['APF','CONH']);
+    var prefixos = todosPrefixos().filter(function(p){ return excluir.indexOf(p) === -1; });
+
+    var listWrap = el('<div class="field-row" style="margin-top:10px;"><div class="field" style="min-width:220px"><label>Modalidade</label><select class="p-sel"></select></div><div class="field"><button class="btn-ghost" type="button">+ nova modalidade</button></div></div>');
+    var selP = listWrap.querySelector('.p-sel');
+    prefixos.forEach(function(p){
+      var opt = document.createElement('option'); opt.value = p; opt.textContent = p + ' — ' + nomeModalidade(p);
+      selP.appendChild(opt);
+    });
+    if(!cfgConteudoState.prefixoSel || prefixos.indexOf(cfgConteudoState.prefixoSel) === -1) cfgConteudoState.prefixoSel = prefixos[0];
+    selP.value = cfgConteudoState.prefixoSel;
+    selP.addEventListener('change', function(){ cfgConteudoState.prefixoSel = selP.value; renderCfgConteudos(); });
+    listWrap.querySelector('button').addEventListener('click', function(){
+      var code = window.prompt('Código da nova modalidade (ex: HOQ):');
+      if(!code) return;
+      code = code.trim().toUpperCase();
+      if(STORE.motor.lessonContent[code]){ showToast('Já existe uma modalidade com esse código.'); return; }
+      var nome = window.prompt('Nome a mostrar (ex: Hóquei em Campo):', code) || code;
+      STORE.motor.sheetName[code] = nome;
+      STORE.motor.lessonContent[code] = { '1': [['(por preencher)','']] };
+      onMutated();
+      cfgConteudoState.prefixoSel = code;
+      showToast('Modalidade "'+nome+'" criada. Nota: sem regras de espaço próprias, pode ser lecionada em qualquer espaço — adicione-a à sequência de um ano/período para a usar.');
+      renderCfgConteudos();
+    });
+    root.appendChild(listWrap);
+
+    var prefixo = cfgConteudoState.prefixoSel;
+    if(!prefixo) return;
+    var byN = STORE.motor.lessonContent[prefixo] || {};
+    Object.keys(byN).sort(function(a,b){ return Number(a)-Number(b); }).forEach(function(nKey){
+      var rows = byN[nKey];
+      var usos = usosDoNKey(prefixo, Number(nKey));
+      var block = el('<div class="conteudo-block"><div class="cb-head"><span class="nome">n = '+esc(nKey)+' aulas</span><span class="n">'+(usos.length ? 'usado em: '+esc(usos.join(', ')) : 'não usado atualmente em nenhuma sequência')+'</span></div><div class="rows"></div></div>');
+      var rowsWrap = block.querySelector('.rows');
+      renderRowsEditor(rowsWrap, rows, [{idx:0,label:'Conteúdo',kind:'textarea'},{idx:1,label:'Função',kind:'text'}], function(){ onMutated(); renderCfgConteudos(); });
+      var btnAdd = el('<button class="btn-ghost" type="button">+ adicionar aula a este grupo</button>');
+      btnAdd.addEventListener('click', function(){ rows.push(['(por preencher)','']); onMutated(); renderCfgConteudos(); });
+      block.appendChild(btnAdd);
+      if(!usos.length){
+        var btnDel = el('<button class="btn-danger" type="button" style="margin-left:8px;">remover este grupo (n='+esc(nKey)+')</button>');
+        btnDel.addEventListener('click', function(){
+          if(!window.confirm('Remover o grupo de conteúdo com n='+nKey+'?')) return;
+          delete STORE.motor.lessonContent[prefixo][nKey];
+          onMutated(); renderCfgConteudos();
+        });
+        block.appendChild(btnDel);
+      }
+      root.appendChild(block);
+    });
+
+    var btnAddN = el('<button class="btn-ghost" type="button" style="margin-top:6px;">+ novo grupo (novo n.º de aulas)</button>');
+    btnAddN.addEventListener('click', function(){
+      var n = parseInt(window.prompt('Para quantas aulas é este grupo de conteúdo?','1'), 10);
+      if(!n || n < 1) return;
+      ensureContentList(prefixo, n);
+      onMutated();
+      renderCfgConteudos();
+    });
+    root.appendChild(btnAddN);
+  }
+
+  function renderConteudoAnual(root){
+    ['APF','CONH'].forEach(function(prefixo){
+      var nKey = prefixo === 'APF' ? '12' : '5';
+      var rows = (STORE.motor.lessonContent[prefixo] || {})[nKey] || [];
+      var usoTexto = ['7','8','9'].map(function(grade){
+        var total = 0;
+        STORE.motor.periodoKeys.forEach(function(pk){
+          (STORE.motor.gradePeriodos[grade][pk] || []).forEach(function(pair){ if(pair[0]===prefixo) total += pair[1]; });
+        });
+        return grade+'.º ano: '+total+'/'+rows.length;
+      }).join(' · ');
+      var block = el('<div class="conteudo-block"><div class="cb-head"><span class="nome">'+esc(nomeModalidade(prefixo))+' ('+prefixo+')</span><span class="n">lista anual, partilhada pelos 3 anos: '+usoTexto+'</span></div><div class="rows"></div></div>');
+      root.appendChild(el('<p class="sub" style="margin:0 0 8px;">Esta lista é consumida por ordem, do início, em cada ano de escolaridade (cada ano tem o seu próprio "cursor" mas usa exatamente a mesma lista de itens). Mudar o número de itens usados em cada período faz-se na "Sequência por ano/período".</p>'));
+      var rowsWrap = block.querySelector('.rows');
+      renderRowsEditor(rowsWrap, rows, [{idx:0,label:'Conteúdo',kind:'textarea'},{idx:1,label:'Função',kind:'text'}], function(){ onMutated(); renderCfgConteudos(); });
+      var btnAdd = el('<button class="btn-ghost" type="button">+ adicionar item ao fim da lista</button>');
+      btnAdd.addEventListener('click', function(){ rows.push(['(por preencher)','']); onMutated(); renderCfgConteudos(); });
+      block.appendChild(btnAdd);
+      root.appendChild(block);
+    });
+  }
+
+  // ================================================================
+  // INICIALIZAÇÃO
+  // ================================================================
+  function initApp(fromReload){
+    var saved = loadRState();
+    if(saved && saved.turma) rstate.turma = saved.turma;
+    if(saved && saved.periodo) rstate.periodo = saved.periodo;
+    buildSelTurma();
+    if(!rstate.periodo || !PLANIF.turmas[rstate.turma] || !PLANIF.turmas[rstate.turma][rstate.periodo]){
+      rstate.periodo = periodoDeHoje(rstate.turma);
+    }
+    renderTabsPeriodo();
+    renderRoteiro();
+    if(!document.getElementById('view-config').hidden){
+      // se a vista de configuração estava aberta (ex.: depois de importar), refrescar o separador ativo
+      if(document.getElementById('cfgtab-turmas').classList.contains('active')) renderCfgTurmas();
+      else if(document.getElementById('cfgtab-calendario').classList.contains('active')) renderCfgCalendario();
+      else renderCfgConteudos();
+    }
+  }
+
+  STORE = loadStore();
+  loadEstadoAll();
+  if(!recompute()){
+    STORE = defaultStore();
+    recompute();
+  }
+  initTopTabs();
+  initConfigActions();
+  initRoteiroListeners();
+  initApp(false);
+})();
+
+</script>
+</body>
+</html>
